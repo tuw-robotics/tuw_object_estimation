@@ -9,7 +9,7 @@ sigma_omega_sys: 0.5
 sigma_init_state: 0.05
 resample_rate: 1.0
 deletion_cycles: 30
-deletion_cycles_inv: 5
+deletion_cycles_inv: 2
 promotion_cycles: 3
 angle_partitions: 8
 max_dist_for_association: 3.22
@@ -18,8 +18,10 @@ fwd_pred_time: 0.25
 output_mean: true
 visually_confirmed: true
 use_mahalanobis: true
-gamma: 1.0
+visual_confirmation_inc: 2
+gamma: 0.35
 motion_model: 2
 measurement_model: 1
 particle_filter_output_modality: 1
 enable_clustering: false
+grid_map_layer: 0

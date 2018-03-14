@@ -16,12 +16,12 @@
     <remap from="initialpose" to="$(arg initialpose)"/>
     <remap from="tracked_objects" to="$(arg tracked_objects_topic)"/>
     <param name="common_frame" value="$(arg common_frame)"/>
-    <param name="grid_map_bagfile" value="$(find tuw_people_tracking)/config/$(arg grid_map_bagfile)"/>
-    <rosparam command="load" file="$(find tuw_people_tracking)/config/$(arg detection_topics)" />
-    <rosparam command="load" file="$(find tuw_people_tracking)/config/$(arg parameter_config)" />
+    <param name="grid_map_bagfile" value="$(find tuw_object_tracking)/config/$(arg grid_map_bagfile)"/>
+    <rosparam command="load" file="$(find tuw_object_tracking)/config/$(arg detection_topics)" />
+    <rosparam command="load" file="$(find tuw_object_tracking)/config/$(arg parameter_config)" />
   </node>
   
   <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
-    <rosparam command="load" file="$(find tuw_people_tracking)/config/grid_map_visualization.yaml" />
+    <rosparam command="load" file="$(find tuw_object_tracking)/config/grid_map_visualization.yaml" />
   </node>
 </launch>
