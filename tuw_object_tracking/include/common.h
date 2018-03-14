@@ -34,14 +34,18 @@
 #define COMMON_H
 
 #define STATE_SIZE 9
-#define STATE_X 0
-#define STATE_Y 1
-#define STATE_VX 2
-#define STATE_VY 3
-#define STATE_AX 4
-#define STATE_AY 5
-#define STATE_OMEGA 6
-#define STATE_X_PREV 7
-#define STATE_Y_PREV 8
+
+enum class State
+{
+  X = 0,
+  Y = 1,
+  VX = 2,
+  VY = 3,
+  AX = 4,
+  AY = 5,
+  OMEGA = 6,
+  X_PREV = 7,
+  Y_PREV = 8
+};
 
 #endif // COMMON_H

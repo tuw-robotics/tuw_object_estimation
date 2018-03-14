@@ -254,13 +254,13 @@ void ObjectTracker::update()
       {
         Eigen::Matrix<double, STATE_SIZE, 1> init_state;
         
-        init_state(STATE_X) = (*det)[unused_detections[i]].pose2d.x();
-        init_state(STATE_Y) = (*det)[unused_detections[i]].pose2d.y();
-        init_state(STATE_VX) = 0;
-        init_state(STATE_VY) = 0;
-        init_state(STATE_AX) = 0;
-        init_state(STATE_AY) = 0;
-        init_state(STATE_OMEGA) = 0;
+        init_state(static_cast<int>(State::X)) = (*det)[unused_detections[i]].pose2d.x();
+        init_state(static_cast<int>(State::Y)) = (*det)[unused_detections[i]].pose2d.y();
+        init_state(static_cast<int>(State::VX)) = 0;
+        init_state(static_cast<int>(State::VY)) = 0;
+        init_state(static_cast<int>(State::AX)) = 0;
+        init_state(static_cast<int>(State::AY)) = 0;
+        init_state(static_cast<int>(State::OMEGA)) = 0;
         
         if(det->sensor_type() != SENSOR_TYPE_GENERIC_MONOCULAR_VISION)
         {

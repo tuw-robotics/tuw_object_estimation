@@ -70,12 +70,12 @@ void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
   Eigen::VectorXd sample = state;
 
   // current state vel vector angle theta and magnitude r
-  double theta = atan2(state(STATE_VY), state(STATE_VX));
-  double r = sqrt(state(STATE_VX) * state(STATE_VX) + state(STATE_VY) * state(STATE_VY));
+  double theta = atan2(state(static_cast<int>(State::VY)), state(static_cast<int>(State::VX)));
+  double r = sqrt(state(static_cast<int>(State::VX)) * state(static_cast<int>(State::VX)) + state(static_cast<int>(State::VY)) * state(static_cast<int>(State::VY)));
 
   // calculate map index from current position
   grid_map::Index idx;
-  grid_map::Position pos(state(STATE_X), state(STATE_Y));
+  grid_map::Position pos(state(static_cast<int>(State::X)), state(static_cast<int>(State::Y)));
   double theta_tar;
   int direction;
 
@@ -128,11 +128,11 @@ void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
   
   double theta_next = theta + atan2(sin(theta_diff), cos(theta_diff)) * gamma_;
   
-  sample(STATE_X) = state(STATE_X) + state(STATE_VX) * dt + dt * dt * 0.5 * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
-  sample(STATE_Y) = state(STATE_Y) + state(STATE_VY) * dt + dt * dt * 0.5 * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
+  sample(static_cast<int>(State::X)) = state(static_cast<int>(State::X)) + state(static_cast<int>(State::VX)) * dt + dt * dt * 0.5 * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
+  sample(static_cast<int>(State::Y)) = state(static_cast<int>(State::Y)) + state(static_cast<int>(State::VY)) * dt + dt * dt * 0.5 * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
 
-  sample(STATE_VX) = r * cos(theta_next) + dt * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
-  sample(STATE_VY) = r * sin(theta_next) + dt * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
+  sample(static_cast<int>(State::VX)) = r * cos(theta_next) + dt * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
+  sample(static_cast<int>(State::VY)) = r * sin(theta_next) + dt * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
 
   state = sample;
 }

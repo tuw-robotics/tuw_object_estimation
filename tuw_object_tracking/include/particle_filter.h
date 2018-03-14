@@ -135,8 +135,6 @@ public:
     // forward prediction
     for (size_t i = 0; i < particles_->size(); i++)
     {
-      // save previous state
-      (*particles_)[i].state(STATE_X_PREV) = (*particles_)[i].state(STATE_X);
       system_model_->sample((*particles_)[i].state, dt);
     }
   }

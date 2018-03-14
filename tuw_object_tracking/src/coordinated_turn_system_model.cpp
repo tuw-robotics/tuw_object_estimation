@@ -50,41 +50,41 @@ void CoordinatedTurnSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, doubl
   assert(state.size() >= state_size_);
   Eigen::VectorXd sample = state;
   
-  if(state(STATE_OMEGA) != 0.0)
+  if(state(static_cast<int>(State::OMEGA)) != 0.0)
   {
-    sample(STATE_X) = state(STATE_X) + state(STATE_VX) * sin(dt * state(STATE_OMEGA)) / state(STATE_OMEGA)
-                    + state(STATE_VY) * (cos(dt * state(STATE_OMEGA)) - 1) / state(STATE_OMEGA) 
+    sample(static_cast<int>(State::X)) = state(static_cast<int>(State::X)) + state(static_cast<int>(State::VX)) * sin(dt * state(static_cast<int>(State::OMEGA))) / state(static_cast<int>(State::OMEGA))
+                    + state(static_cast<int>(State::VY)) * (cos(dt * state(static_cast<int>(State::OMEGA))) - 1) / state(static_cast<int>(State::OMEGA)) 
                     + dt * dt * 0.5 * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
                     
-    sample(STATE_Y) = state(STATE_Y) - state(STATE_VX) * (cos(dt * state(STATE_OMEGA)) - 1) / state(STATE_OMEGA)
-                    + state(STATE_VY) * sin(dt * state(STATE_OMEGA)) / state(STATE_OMEGA) 
+    sample(static_cast<int>(State::Y)) = state(static_cast<int>(State::Y)) - state(static_cast<int>(State::VX)) * (cos(dt * state(static_cast<int>(State::OMEGA))) - 1) / state(static_cast<int>(State::OMEGA))
+                    + state(static_cast<int>(State::VY)) * sin(dt * state(static_cast<int>(State::OMEGA))) / state(static_cast<int>(State::OMEGA)) 
                     + dt * dt * 0.5 * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
                     
-    sample(STATE_VX) = state(STATE_VX) * cos(dt * state(STATE_OMEGA)) 
-                    - state(STATE_VY) * sin(dt * state(STATE_OMEGA)) 
+    sample(static_cast<int>(State::VX)) = state(static_cast<int>(State::VX)) * cos(dt * state(static_cast<int>(State::OMEGA))) 
+                    - state(static_cast<int>(State::VY)) * sin(dt * state(static_cast<int>(State::OMEGA))) 
                     + dt * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
                     
-    sample(STATE_VY) = state(STATE_VX) * sin(dt * state(STATE_OMEGA)) 
-                    + state(STATE_VY) * cos(dt * state(STATE_OMEGA)) 
+    sample(static_cast<int>(State::VY)) = state(static_cast<int>(State::VX)) * sin(dt * state(static_cast<int>(State::OMEGA))) 
+                    + state(static_cast<int>(State::VY)) * cos(dt * state(static_cast<int>(State::OMEGA))) 
                     + dt * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
                     
-    sample(STATE_OMEGA) = state(STATE_OMEGA) + dt * sigma_omega_ * sigma_omega_ * normal_distribution_(generator_);
+    sample(static_cast<int>(State::OMEGA)) = state(static_cast<int>(State::OMEGA)) + dt * sigma_omega_ * sigma_omega_ * normal_distribution_(generator_);
   }
   else  // limit
   {
-    sample(STATE_X) = state(STATE_X) + state(STATE_VX) * dt
+    sample(static_cast<int>(State::X)) = state(static_cast<int>(State::X)) + state(static_cast<int>(State::VX)) * dt
                     + dt * dt * 0.5 * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
                     
-    sample(STATE_Y) = state(STATE_Y) + state(STATE_VY) * dt 
+    sample(static_cast<int>(State::Y)) = state(static_cast<int>(State::Y)) + state(static_cast<int>(State::VY)) * dt 
                     + dt * dt * 0.5 * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
                     
-    sample(STATE_VX) = state(STATE_VX)
+    sample(static_cast<int>(State::VX)) = state(static_cast<int>(State::VX))
                      + dt * sigma_x_ * sigma_x_ * normal_distribution_(generator_);
                     
-    sample(STATE_VY) = state(STATE_VY)
+    sample(static_cast<int>(State::VY)) = state(static_cast<int>(State::VY))
                      + dt * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
                     
-    sample(STATE_OMEGA) = dt * sigma_omega_ * sigma_omega_ * normal_distribution_(generator_);
+    sample(static_cast<int>(State::OMEGA)) = dt * sigma_omega_ * sigma_omega_ * normal_distribution_(generator_);
   }
   
   state = sample;

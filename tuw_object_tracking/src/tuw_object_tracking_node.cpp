@@ -416,8 +416,8 @@ void ObjectTrackingNode::publishTracks(bool particles)
         for (size_t j = 0; j < particles->size(); j++)
         {
           geometry_msgs::Pose pose;
-          pose.position.x = particles->operator[](j).state(STATE_X);
-          pose.position.y = particles->operator[](j).state(STATE_Y);
+          pose.position.x = particles->operator[](j).state(static_cast<int>(State::X));
+          pose.position.y = particles->operator[](j).state(static_cast<int>(State::Y));
           pose.position.z = 0;
           double yaw = atan2(particles->operator[](j).state(3), particles->operator[](j).state(2));
           tf::Quaternion q;

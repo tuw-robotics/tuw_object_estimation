@@ -48,12 +48,12 @@ void ConstAccSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
   assert(state.size() >= state_size_);
   Eigen::VectorXd sample = state;
   
-  sample(STATE_X) = state(STATE_X) + state(STATE_VX) * dt + dt * dt * 0.5 * state(STATE_AX);
-  sample(STATE_Y) = state(STATE_Y) + state(STATE_VY) * dt + dt * dt * 0.5 * state(STATE_AY);
-  sample(STATE_VX) = state(STATE_VX) + dt * state(STATE_AX);
-  sample(STATE_VY) = state(STATE_VY) + dt * state(STATE_AY);
-  sample(STATE_AX) = state(STATE_AX) + sigma_x_ * normal_distribution_(generator_);
-  sample(STATE_AY) = state(STATE_AY) + sigma_y_ * normal_distribution_(generator_);
+  sample(static_cast<int>(State::X)) = state(static_cast<int>(State::X)) + state(static_cast<int>(State::VX)) * dt + dt * dt * 0.5 * state(static_cast<int>(State::AX));
+  sample(static_cast<int>(State::Y)) = state(static_cast<int>(State::Y)) + state(static_cast<int>(State::VY)) * dt + dt * dt * 0.5 * state(static_cast<int>(State::AY));
+  sample(static_cast<int>(State::VX)) = state(static_cast<int>(State::VX)) + dt * state(static_cast<int>(State::AX));
+  sample(static_cast<int>(State::VY)) = state(static_cast<int>(State::VY)) + dt * state(static_cast<int>(State::AY));
+  sample(static_cast<int>(State::AX)) = state(static_cast<int>(State::AX)) + sigma_x_ * normal_distribution_(generator_);
+  sample(static_cast<int>(State::AY)) = state(static_cast<int>(State::AY)) + sigma_y_ * normal_distribution_(generator_);
   
   state = sample;
 }
