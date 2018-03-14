@@ -1,0 +1,1 @@
+detection_topics: [/r1/detectnet_node/detected_persons_tuw, /r1/leg_detector/detected_persons_tuw]

@@ -1,0 +1,3 @@
+detection_topics: [/p3dx/realsense_people_detection/detected_persons_tuw_drop, /p3dx/leg_detector/detected_persons_tuw_drop, /p3dx/detectnet_node/detected_persons_tuw_drop, test]
+# , /p3dx/people_measurements_tuw
+# /p3dx/upper_body_detector/detected_persons_tuw

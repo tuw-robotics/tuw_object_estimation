@@ -1,0 +1,3 @@
+<launch>
+  <node name="rviz_heatmap" pkg="rviz" type="rviz" args="-d $(find tuw_tracking_heatmap)/cfg/tracking_heatmap.rviz" />
+</launch>

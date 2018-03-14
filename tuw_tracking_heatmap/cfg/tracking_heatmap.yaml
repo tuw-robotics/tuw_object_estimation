@@ -1,0 +1,7 @@
+grid_map_topic: /grid_map
+
+grid_map_visualizations:
+  - name: flat_grid
+    type: flat_point_cloud
+    params:
+     height: 0.0

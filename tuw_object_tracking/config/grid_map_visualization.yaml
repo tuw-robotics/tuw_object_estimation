@@ -1,0 +1,81 @@
+grid_map_topic: /grid_map
+grid_map_visualizations:
+  - name: heatmap_grid_map
+    type: flat_point_cloud
+    params:
+      height: 0.0
+  - name: likelihood_field
+    type: occupancy_grid
+    params:
+      layer: likelihood_field
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_0
+    type: occupancy_grid
+    params:
+      layer: angle_0
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_1
+    type: occupancy_grid
+    params:
+      layer: angle_1
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_2
+    type: occupancy_grid
+    params:
+      layer: angle_2
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_3
+    type: occupancy_grid
+    params:
+      layer: angle_3
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_4
+    type: occupancy_grid
+    params:
+      layer: angle_4
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_5
+    type: occupancy_grid
+    params:
+      layer: angle_5
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_6
+    type: occupancy_grid
+    params:
+      layer: angle_6
+      data_min: 0.0
+      data_max: 1.0
+  - name: angle_7
+    type: occupancy_grid
+    params:
+      layer: angle_7
+      data_min: 0.0
+      data_max: 1.0
+
+
+#grid_map_topic: /grid_map
+#grid_map_visualizations:
+#  - name: occupancy_grid_map
+#    type: occupancy_grid
+#    params:
+#      layer: occupancy_map
+#      data_min: 0.0
+#      data_max: 100.0
+#      # -1 means dont know
+
+#grid_map_topic: /grid_map
+#grid_map_visualizations:
+#  - name: edges
+#    type: occupancy_grid
+#    params:
+#      layer: edges
+#      data_min: 0.0
+#      data_max: 100.0
+#      # -1 means dont know

@@ -1,0 +1,1 @@
+detection_topics: [/p3dx/realsense_people_detection/detected_persons_tuw, /p3dx/leg_detector/detected_persons_tuw, /p3dx/detectnet_node/detected_persons_tuw]

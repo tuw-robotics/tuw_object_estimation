@@ -1,0 +1,1 @@
+detection_topics: [/p3dx/realsense_people_detection/detected_persons_tuw, test]

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="detection" default="object_detection_test"/>
+  <arg name="common_frame" default="map"/>
+  <arg name="initialpose" default="people_tracking/initialpose"/>
+  <arg name="grid_map_frame" default="grid_map"/>
+  <arg name="grid_map_bagfile" default="roblab_heatmap_da_blur_sum.bag"/>
+  <arg name="detection_topics" default="detection_topics_rgbd_laser_rgb.yaml"/>
+  <arg name="parameter_config" default="parameters_heatmap.yaml"/>
+  <arg name="tracked_objects_topic" default="tracked_people"/>
+  
+  <node pkg="tuw_object_tracking" type="tuw_object_tracking_node" name="tuw_people_tracking_node" output="screen" >
+    <remap from="detection" to="$(arg detection)"/>
+    <remap from="grid_map" to="$(arg grid_map_frame)"/>
+    <remap from="initialpose" to="$(arg initialpose)"/>
+    <remap from="tracked_objects" to="$(arg tracked_objects_topic)"/>
+    <param name="common_frame" value="$(arg common_frame)"/>
+    <param name="grid_map_bagfile" value="$(find tuw_people_tracking)/config/$(arg grid_map_bagfile)"/>
+    <rosparam command="load" file="$(find tuw_people_tracking)/config/$(arg detection_topics)" />
+    <rosparam command="load" file="$(find tuw_people_tracking)/config/$(arg parameter_config)" />
+  </node>
+  
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+    <rosparam command="load" file="$(find tuw_people_tracking)/config/grid_map_visualization.yaml" />
+  </node>
+</launch>

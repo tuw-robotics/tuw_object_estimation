@@ -1,0 +1,1 @@
+detection_topics: [/p3dx/people_measurements_tuw, /p3dx/upper_body_detector/detected_persons_tuw, test]

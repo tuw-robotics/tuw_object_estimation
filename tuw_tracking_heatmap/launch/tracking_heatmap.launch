@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="tracked_persons" default="/tracked_people" />
+  
+  <arg name="grid_map_bagfile" default="heatmap_backup.bag"/>
+  <arg name="grid_map_bagfile_out" default="heatmap_backup_out.bag"/>
+  
+  <arg name="compute_social_forces" default="false" />
+  <arg name="a_obj" default="100" />
+  <arg name="b_obj" default="0.01" />
+  <arg name="c_obj" default="600" />
+  <arg name="r_pers" default="0.2" />
+  <arg name="border_length" default="2" />
+  <arg name="scale" default="0" />
+  <arg name="person_weight" default="0.1" />
+  
+  <arg name="apply_blur" default="false"/>
+  <arg name="ksize" default="15"/>
+  
+  <arg name="likelihood_field_sigma" default="5.0"/>
+  
+  <arg name="image_output_dir" default="$(find tuw_tracking_heatmap)/images/" />
+  
+  <node pkg="tuw_tracking_heatmap" type="tuw_tracking_heatmap_node" name="tuw_tracking_heatmap_node" output="screen">
+    <param name="grid_map_bagfile" value="$(find tuw_tracking_heatmap)/bags/$(arg grid_map_bagfile)"/>
+    <param name="grid_map_bagfile_out" value="$(find tuw_tracking_heatmap)/bags/$(arg grid_map_bagfile_out)"/>
+    <param name="apply_blur" value="$(arg apply_blur)"/>
+    <param name="ksize" value="$(arg ksize)"/>
+    <param name="line_length" value="$(arg line_length)"/>
+    <param name="angle_partitions" value="$(arg angle_partitions)"/>
+    <param name="likelihood_field_sigma" value="$(arg likelihood_field_sigma)"/>
+    <param name="a_obj" value="$(arg a_obj)" />
+    <param name="b_obj" value="$(arg b_obj)" />
+    <param name="c_obj" value="$(arg c_obj)" />
+    <param name="r_pers" value="$(arg r_pers)" />
+    <param name="scale" value="$(arg scale)" />
+    <param name="border_length" value="$(arg border_length)" />
+    <param name="person_weight" value="$(arg person_weight)" />
+    <param name="image_output_dir" value="$(arg image_output_dir)" />
+    <remap from="tracked_persons" to="$(arg tracked_persons)"/>
+  </node>
+  
+  <!-- Launch the grid map visualizer -->
+  <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+    <rosparam command="load" file="$(find tuw_tracking_heatmap)/cfg/tracking_heatmap.yaml" />
+  </node>
+</launch>
