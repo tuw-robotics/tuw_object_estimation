@@ -1,4 +1,5 @@
-# TUW TRACKING HEATMAP
+tuw_tracking_heatmap
+===
 
 This package creates heat maps of likely locations of people in a static map. It is able to compute an initial likelihood field based on a static map and furthermore, observed tracks can be integrated for the use of historic data.
 
