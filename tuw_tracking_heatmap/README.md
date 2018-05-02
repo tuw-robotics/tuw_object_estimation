@@ -1,13 +1,11 @@
-# TUW TRACKING HEATMAP
+tuw_tracking_heatmap
+===
 
 This package creates heat maps of likely locations of people in a static map. It is able to compute an initial likelihood field based on a static map and furthermore, observed tracks can be integrated for the use of historic data.
 
 # Packages needed in workspace
-* grid_map https://github.com/tuw-robotics/grid_map branch: optimization/interpolation_methods
-* tuw_common https://github.com/tuw-robotics/tuw_common branch: master
-* tuw_p3dx https://gitlab.auto.tuwien.ac.at/tuw-robotics/tuw_p3dx branch: master
-* tuw_diffdrive https://gitlab.auto.tuwien.ac.at/robotic/tuw_diffdrive branch: master
-* tuw_people_detection https://gitlab.auto.tuwien.ac.at/robotic/tuw_people_detection branch: master
+* grid_map https://github.com/tuw-robotics/grid_map
+* tuw_common https://github.com/tuw-robotics/tuw_common
 
 # Compilation
 Compile with 

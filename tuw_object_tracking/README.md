@@ -11,16 +11,17 @@ Nevertheless, it can in principle be used to track any object given appropriate 
 ## Dependencies:
 
 ### ROS source packages:
-  roscpp
-  tuw_object_msgs
-  tuw_geometry
-  geometry_msgs
-  tf
-  dynamic_reconfigure
-  grid_map_msgs
-  grid_map_ros
-  grid_map_cv
-  grid_map_core
+  roscpp  
+  tuw_object_msgs  
+  tuw_geometry  
+  geometry_msgs  
+  tf  
+  dynamic_reconfigure  
+  grid_map_msgs  
+  grid_map_ros  
+  grid_map_cv  
+  grid_map_core  
+  pose_cov_ops  
 
 * [tuw_common](https://github.com/tuw-robotics/tuw_common) ```check the INSTALL.md inside the pkg because it holds submodules```
   * [tuw_msgs](https://github.com/tuw-robotics/tuw_msgs)
