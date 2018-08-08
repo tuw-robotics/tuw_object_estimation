@@ -2,6 +2,7 @@
 #define MUNKRES_H
 
 #include <eigen3/Eigen/Dense>
+#include <vector>
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;

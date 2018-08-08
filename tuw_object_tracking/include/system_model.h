@@ -34,6 +34,7 @@
 #define SYSTEM_MODEL_H
 
 #include <eigen3/Eigen/Dense>
+#include <random>
 
 class SystemModel
 {
