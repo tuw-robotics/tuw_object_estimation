@@ -41,16 +41,18 @@
 #include <tuw_object_tracking/tuw_object_trackingConfig.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <grid_map_ros/grid_map_ros.hpp>
+#include <memory>
 
-class ObjectTrackingNode : public ObjectTracker
+class ObjectTrackingNode
 {
 public:
   ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<ParticleFilterConfig> pf_config, std::shared_ptr<TrackerConfig> t_config);
   void callbackParameters(tuw_object_tracking::tuw_object_trackingConfig &config, uint32_t level);
   void detectionCallback(const tuw_object_msgs::ObjectDetection& detection);
   void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose);
-  void printTracks(bool particles);
-  void publishTracks(bool particles);
+  void printTracks(bool particles) const;
+  void publishTracks(bool particles) const;
+  ObjectTracker& objectTracker() const;
 private:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
@@ -71,6 +73,8 @@ private:
   tuw_object_tracking::tuw_object_trackingConfig config_;
   
   std::shared_ptr<tf::TransformListener> tf_listener_;
+  
+  std::unique_ptr<ObjectTracker> object_tracker_;
   
   std::string common_frame_;
   std::string grid_map_bagfile_;

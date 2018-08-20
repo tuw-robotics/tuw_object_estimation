@@ -30,42 +30,21 @@
  *   POSSIBILITY OF SUCH DAMAGE.                                           *
  ***************************************************************************/
 
-#ifndef OBJECT_TRACKER_H
-#define OBJECT_TRACKER_H
+#ifndef OBJECT_TRACKER_SEPARATE_H
+#define OBJECT_TRACKER_SEPARATE_H
 
-#include <tuw_object_msgs/ObjectDetection.h>
-#include <tuw_geometry/tuw_geometry.h>
-#include <particle_filter_config.h>
+#include "object_tracker.h"
 #include <tracker_config.h>
 #include <track.h>
 #include <common.h>
 
-class ObjectTracker
+class ObjectTrackerSeparate : public ObjectTracker
 {
 public:
-  ObjectTracker(std::shared_ptr<ParticleFilterConfig> pf_config, std::shared_ptr<TrackerConfig> t_config);
-  virtual ~ObjectTracker() {};
-  
-  int createTrack(const Eigen::Matrix<double, STATE_SIZE, 1> init_state);
-  void deleteTrack(const int track_id);
-  const std::map<int, Track<STATE_SIZE>>& getTracks() const;
-  void addDetection(const MeasurementObjectConstPtr& detection);
-  void predict(boost::posix_time::ptime current_time_stamp);
-  void clearDetections();
-  void setPFConfig(ParticleFilterConfig& pf_config);
-  void updatePFConfig();
-  void setTrackerConfig(TrackerConfig& t_config);
-  void updateTrackerConfig();
-  
-  // this has to be implemented by the specific tracker
-  virtual void update() = 0;
-  
-  std::shared_ptr<ParticleFilterConfig> pf_config_;
-  std::shared_ptr<TrackerConfig> t_config_;
-protected:
-  int track_id_counter_;
-  std::vector<MeasurementObjectConstPtr> detections_;
-  std::map<int, Track<STATE_SIZE>> tracks_;
+  ObjectTrackerSeparate(std::shared_ptr<ParticleFilterConfig> pf_config, std::shared_ptr<TrackerConfig> t_config);
+  void update() override;
+private:
+  bool calcAssignments(const MeasurementObjectConstPtr& detection, std::vector<int>& assignment, Eigen::MatrixXd& D);
 };
 
-#endif  // OBJECT_TRACKER_H
+#endif  // OBJECT_TRACKER_SEPARATE_H

@@ -3,7 +3,7 @@ project(tuw_object_tracking)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
-add_compile_options(-std=c++14 -march=native -Wall -fext-numeric-literals)
+add_compile_options(-std=c++14 -march=native -Wall -fext-numeric-literals -g)
 
 MESSAGE( STATUS "CMAKE_BUILD_TYPE:              " ${CMAKE_BUILD_TYPE} )
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")#
@@ -145,6 +145,8 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/object_tracker.cpp
+  src/object_tracker_separate.cpp
+  src/object_tracker_mcmc.cpp
   src/const_vel_system_model.cpp
   src/simple_meas_model.cpp
   src/mahalanobis_meas_model.cpp

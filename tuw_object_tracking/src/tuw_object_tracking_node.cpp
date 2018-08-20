@@ -45,6 +45,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseWithCovariance.h>
 #include <pose_cov_ops/pose_cov_ops.h>
+#include "object_tracker_separate.h"
 
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -53,6 +54,7 @@
 #include <grid_map_cv/grid_map_cv.hpp>
 #include <opencv2/highgui.hpp>
 
+
 #define foreach BOOST_FOREACH
 
 using std::cout;
@@ -60,7 +62,7 @@ using std::endl;
 
 ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<ParticleFilterConfig> pf_config,
                                        std::shared_ptr<TrackerConfig> t_config)
-  : ObjectTracker(pf_config, t_config), nh_(nh), nh_private_("~")
+  :  nh_(nh), nh_private_("~")
 {
   // generate subscribers to topics in detection_topics.yaml
   nh_private_.param("detection_topics", detection_topics_, std::vector<std::string>(1, "detection"));
@@ -106,6 +108,8 @@ ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<Part
     heat_map_.setGeometry(grid_map::Length(5.0, 5.0), 0.01, grid_map::Position::Zero());
   }
 
+  object_tracker_ = std::make_unique<ObjectTrackerSeparate>(pf_config, t_config);
+  
   reconfigureFnc_ = boost::bind(&ObjectTrackingNode::callbackParameters, this, _1, _2);
   reconfigureServer_.setCallback(reconfigureFnc_);
 }
@@ -127,20 +131,20 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
   switch (config.motion_model)
   {
     case 0:  // constant velocity
-      pf_config_->system_model = std::make_shared<ConstVelSystemModel>(config.sigma_x_sys, config.sigma_y_sys);
+      object_tracker_->pf_config_->system_model = std::make_shared<ConstVelSystemModel>(config.sigma_x_sys, config.sigma_y_sys);
       std::cout << "switch to const vel model" << std::endl;
       break;
     case 2:  // heatmap
-      pf_config_->system_model =
+      object_tracker_->pf_config_->system_model =
           std::make_shared<HeatMapSystemModel>(config.sigma_x_sys, config.sigma_y_sys, config.sigma_omega_sys, config.angle_partitions, config.gamma, heat_map_, layer_);
       std::cout << "switch to heatmap model" << std::endl;
       break;
     case 3:  // constant acceleration
-      pf_config_->system_model = std::make_shared<ConstAccSystemModel>(config.sigma_x_sys, config.sigma_y_sys);
+      object_tracker_->pf_config_->system_model = std::make_shared<ConstAccSystemModel>(config.sigma_x_sys, config.sigma_y_sys);
       std::cout << "switch to constant acc model" << std::endl;
       break;
     case 4:  // coordinated turn
-      pf_config_->system_model =
+      object_tracker_->pf_config_->system_model =
           std::make_shared<CoordinatedTurnSystemModel>(config.sigma_x_sys, config.sigma_y_sys, config.sigma_omega_sys);
       std::cout << "switch to coordinated turn model" << std::endl;
       break;
@@ -149,36 +153,39 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
   switch (config.measurement_model)
   {
     case 0: // simple eucl. distance measurement model
-      pf_config_->meas_model = std::make_shared<SimpleMeasModel>(config.sigma_meas);
+      object_tracker_->pf_config_->meas_model = std::make_shared<SimpleMeasModel>(config.sigma_meas);
       break;
     case 1: // mahalanobis distance measurement model
-      pf_config_->meas_model = std::make_shared<MahalanobisMeasModel>(config.cov_scale_meas);
+      object_tracker_->pf_config_->meas_model = std::make_shared<MahalanobisMeasModel>(config.cov_scale_meas);
       break;
   }
 
-  pf_config_->num_particles = config.num_particles;
-  pf_config_->num_particles = config.num_particles;
-  pf_config_->resample_rate = config.resample_rate;
-  pf_config_->sigma_init_state = config.sigma_init_state;
+  object_tracker_->pf_config_->num_particles = config.num_particles;
+  object_tracker_->pf_config_->num_particles = config.num_particles;
+  object_tracker_->pf_config_->resample_rate = config.resample_rate;
+  object_tracker_->pf_config_->sigma_init_state = config.sigma_init_state;
 
-  pf_config_->const_fwd_pred = config.const_fwd_pred;
-  pf_config_->fwd_pred_time = config.fwd_pred_time;
-  pf_config_->particle_filter_output_modality = config.particle_filter_output_modality;
-  pf_config_->enable_clustering = config.enable_clustering;
+  object_tracker_->pf_config_->const_fwd_pred = config.const_fwd_pred;
+  object_tracker_->pf_config_->fwd_pred_time = config.fwd_pred_time;
+  object_tracker_->pf_config_->particle_filter_output_modality = config.particle_filter_output_modality;
+  object_tracker_->pf_config_->enable_clustering = config.enable_clustering;
 
-  t_config_->deletion_cycles = config.deletion_cycles;
-  t_config_->deletion_cycles_inv = config.deletion_cycles_inv;
-  t_config_->promotion_cycles = config.promotion_cycles;
-  t_config_->max_dist_for_association = config.max_dist_for_association;
-  t_config_->visually_confirmed = config.visually_confirmed;
-  t_config_->use_mahalanobis = config.use_mahalanobis;
-  t_config_->visual_confirmation_inc = config.visual_confirmation_inc;
+  object_tracker_->t_config_->deletion_cycles = config.deletion_cycles;
+  object_tracker_->t_config_->deletion_cycles_inv = config.deletion_cycles_inv;
+  object_tracker_->t_config_->promotion_cycles = config.promotion_cycles;
+  object_tracker_->t_config_->max_dist_for_association = config.max_dist_for_association;
+  object_tracker_->t_config_->visually_confirmed = config.visually_confirmed;
+  object_tracker_->t_config_->use_mahalanobis = config.use_mahalanobis;
+  object_tracker_->t_config_->visual_confirmation_inc = config.visual_confirmation_inc;
 
   // update existing tracks
-  for (auto& i : tracks_)
+  object_tracker_->updatePFConfig();
+  /*
+  for (auto& i : object_tracker_->getTracks())
   {
-    i.second.updateConfig(pf_config_);
+    i.second.updateConfig(object_tracker_->pf_config_);
   }
+  */
 }
 
 void ObjectTrackingNode::detectionCallback(const tuw_object_msgs::ObjectDetection& detection)
@@ -295,7 +302,7 @@ void ObjectTrackingNode::detectionCallback(const tuw_object_msgs::ObjectDetectio
     (*meas)[i].covariance(8) = pose_cov[2][2];
   }
 
-  addDetection(meas);
+  object_tracker_->addDetection(meas);
   
   if (config_.print_tracks)
     printTracks(config_.print_particles);
@@ -303,12 +310,12 @@ void ObjectTrackingNode::detectionCallback(const tuw_object_msgs::ObjectDetectio
 
 }
 
-void ObjectTrackingNode::printTracks(bool particles)
+void ObjectTrackingNode::printTracks(bool particles) const
 {
   // output current particles for every track
-  for (auto it = tracks_.begin(); it != tracks_.end(); it++)
+  for (auto it = object_tracker_->getTracks().begin(); it != object_tracker_->getTracks().end(); it++)
   {
-    cout << "tracks[" << it->first - tracks_.begin()->first << "]" << endl;
+    cout << "tracks[" << it->first - object_tracker_->getTracks().begin()->first << "]" << endl;
     for (Eigen::Index i = 0; i < it->second.estimatedState().size(); i++)
     {
       cout << it->second.estimatedState()(i) << ", ";
@@ -332,7 +339,7 @@ void ObjectTrackingNode::printTracks(bool particles)
   }
 }
 
-void ObjectTrackingNode::publishTracks(bool particles)
+void ObjectTrackingNode::publishTracks(bool particles) const
 {
   // publish tracks as tuw_object_msgs::ObjectDetection
   tuw_object_msgs::ObjectDetection detection;
@@ -366,7 +373,7 @@ void ObjectTrackingNode::publishTracks(bool particles)
   pose_array.header.stamp = ros::Time::now();
   pose_array.header.frame_id = common_frame_;
   
-  for (auto it = tracks_.begin(); it != tracks_.end(); it++)
+  for (auto it = object_tracker_->getTracks().begin(); it != object_tracker_->getTracks().end(); it++)
   {
     tuw_object_msgs::ObjectWithCovariance obj;
     Eigen::MatrixXd estimated_state = it->second.estimatedState();
@@ -506,11 +513,13 @@ void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovari
   init_state(5) = 0;
   init_state(6) = 0;
 
-  int id = createTrack(init_state);
-  tracks_.at(id).setVisibility(true);
-  tracks_.at(id).setVisualConfirmation(true);
+  int id = objectTracker().createTrack(init_state);
+  /*
+  object_tracker_->getTracks().at(id).setVisibility(true);
+  object_tracker_->getTracks().at(id).setVisualConfirmation(true);
   for(int i = 0; i < 100; i++)
-    tracks_.at(id).incVisualConfirmation();
+    object_tracker_->getTracks().at(id).incVisualConfirmation();
+  */
 
   ROS_INFO("create track with initial pose: (%f, %f) with id: %d", init_state(0), init_state(1), id);
 
@@ -523,6 +532,12 @@ void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovari
   grid_map::GridMapRosConverter::toMessage(heat_map_, message);
   pub_gridmap_.publish(message);
 }
+
+ObjectTracker& ObjectTrackingNode::objectTracker() const
+{
+  return *object_tracker_;
+}
+
 
 int main(int argc, char** argv)
 {    
@@ -556,13 +571,13 @@ int main(int argc, char** argv)
   
   while (ros::ok())
   {
-    object_tracking_node.predict(ros::Time::now().toBoost());
+    object_tracking_node.objectTracker().predict(ros::Time::now().toBoost());
     
-    object_tracking_node.update();
+    object_tracking_node.objectTracker().update();
 
     object_tracking_node.publishTracks(true);
     
-    object_tracking_node.clearDetections();
+    object_tracking_node.objectTracker().clearDetections();
     
     ros::spinOnce();
     if (!r.sleep())

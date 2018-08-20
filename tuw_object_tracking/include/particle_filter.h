@@ -102,16 +102,6 @@ public:
     updateMeanAndCov();
   }
   
-  void predictFastSlam2(boost::posix_time::ptime current_time_stamp, const MeasurementObject::Object& meas, bool dummy_meas)
-  {
-    
-  }
-  
-  void updateFastSlam2(boost::posix_time::ptime current_time_stamp, const MeasurementObject::Object& meas, bool dummy_meas)
-  {
-    
-  }
-  
   void predict(boost::posix_time::ptime current_time_stamp)
   {
     (void) updateTimestamp(current_time_stamp);

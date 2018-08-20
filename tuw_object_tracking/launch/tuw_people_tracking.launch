@@ -7,7 +7,7 @@
   <arg name="grid_map_frame" default="grid_map"/>
   <arg name="grid_map_bagfile" default="roblab_heatmap_da_blur_sum.bag"/>
   <arg name="detection_topics" default="detection_topics_rgbd_laser_rgb.yaml"/>
-  <arg name="parameter_config" default="parameters_heatmap.yaml"/>
+  <arg name="parameter_config" default="parameters_cv.yaml"/>
   <arg name="tracked_objects_topic" default="tracked_people"/>
   
   <node pkg="tuw_object_tracking" type="tuw_object_tracking_node" name="tuw_people_tracking_node" output="screen" >
