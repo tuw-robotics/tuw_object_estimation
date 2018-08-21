@@ -146,7 +146,6 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/object_tracker.cpp
   src/object_tracker_separate.cpp
-  src/object_tracker_mcmc.cpp
   src/const_vel_system_model.cpp
   src/simple_meas_model.cpp
   src/mahalanobis_meas_model.cpp
