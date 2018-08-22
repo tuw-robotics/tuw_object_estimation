@@ -66,6 +66,8 @@ int main(int argc, char** argv)
 TrackingHeatmapNode::TrackingHeatmapNode(ros::NodeHandle& n) : n_(n), n_param_("~")
 {
   ROS_INFO("initializing tracking heatmap node");
+  
+  
   subTrackings_ = n.subscribe("/human_detections", 1, &TrackingHeatmapNode::trackingCallback, this);
   subGlobalMap_ = n.subscribe("/map", 1, &TrackingHeatmapNode::globalMapCallback, this);
   pubGridMap_ = n.advertise<grid_map_msgs::GridMap>("grid_map", 1, true);
@@ -74,6 +76,7 @@ TrackingHeatmapNode::TrackingHeatmapNode(ros::NodeHandle& n) : n_(n), n_param_("
   pubVectorField_.emplace_back(n.advertise<visualization_msgs::MarkerArray>("/vector_field_south", 1, true));
   pubVectorField_.emplace_back(n.advertise<visualization_msgs::MarkerArray>("/vector_field_west", 1, true));
   pubVectorField_.emplace_back(n.advertise<visualization_msgs::MarkerArray>("/vector_field_forces", 1, true));
+  pubHistTrajectories_ = n.advertise<tuw_object_msgs::ObjectWithCovarianceArrayArray>("trajectory_array", 10, true);
 
   timer_ = n_.createTimer(ros::Duration(0.1), boost::bind(&TrackingHeatmapNode::timerCallback, this, _1));
   savingTimer_ = n_.createTimer(ros::Duration(60), boost::bind(&TrackingHeatmapNode::savingTimerCallback, this, _1));
@@ -215,6 +218,8 @@ void TrackingHeatmapNode::publish(void)
   std::vector<std::string> layers = { "all_dirs", "global_map", "likelihood_field", "sum" };
   map_.setTimestamp(ros::Time::now().toNSec());
   GridMapRosConverter::toMessage(map_, layers, message);
+  hist_trajectories_array_of_arrays_.header.stamp = ros::Time::now();
+  pubHistTrajectories_.publish(hist_trajectories_array_of_arrays_);
   pubGridMap_.publish(message);
 }
 
@@ -259,6 +264,8 @@ void TrackingHeatmapNode::trackingCallback(const tuw_object_msgs::ObjectDetectio
   std_msgs::Header header = _detection->header;
   for (auto it = _detection->objects.begin(); it != _detection->objects.end(); it++)
   {
+    hist_trajectories_[it->object.ids[0]].objects.emplace_back(*it);
+    hist_trajectories_[it->object.ids[0]].header = header;
     object = (*it).object;
     double speed =
         std::sqrt(object.twist.linear.x * object.twist.linear.x + object.twist.linear.y * object.twist.linear.y);
@@ -314,8 +321,14 @@ void TrackingHeatmapNode::trackingCallback(const tuw_object_msgs::ObjectDetectio
 
 void TrackingHeatmapNode::timerCallback(const ros::TimerEvent& event)
 {
+  for(auto&& map_it = hist_trajectories_.begin(); map_it != hist_trajectories_.end(); map_it++)
+  {
+    hist_trajectories_array_of_arrays_.objects_array.emplace_back(map_it->second);
+  }
+  hist_trajectories_array_of_arrays_.header.frame_id = "map";
+  
   cv::Mat all_dirs_image, all_dirs_heatmap_image;
-  grid_map::GridMapCvConverter::toImage<float, 1>(map_, "all_dirs", CV_32FC1, 0, map_["all_dirs"].maxCoeff(),
+  /*grid_map::GridMapCvConverter::toImage<float, 1>(map_, "all_dirs", CV_32FC1, 0, map_["all_dirs"].maxCoeff(),
                                                   all_dirs_image);
   all_dirs_image.convertTo(all_dirs_image, CV_8UC3, 255.0);
   cv::applyColorMap(all_dirs_image, all_dirs_heatmap_image, cv::COLORMAP_JET);
@@ -323,7 +336,7 @@ void TrackingHeatmapNode::timerCallback(const ros::TimerEvent& event)
   cv::imwrite(image_output_dir_, all_dirs_heatmap_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
   cv::namedWindow("Display window", cv::WINDOW_NORMAL);
   cv::imshow("Display window", all_dirs_heatmap_image);
-  cv::waitKey(500);
+  cv::waitKey(500);*/
 
   publish();
 }
@@ -331,11 +344,13 @@ void TrackingHeatmapNode::timerCallback(const ros::TimerEvent& event)
 void TrackingHeatmapNode::savingTimerCallback(const ros::TimerEvent& event)
 {
   ROS_INFO("map backup");
+  
   grid_map_msgs::GridMap message;
   GridMapRosConverter::toMessage(map_, message);
   rosbag::Bag bag;
   bag.open(grid_map_bagfile_out_, rosbag::bagmode::Write);
   bag.write("heatmap_grid_map", ros::Time::now(), message);
+  bag.write("hist_trajectories", ros::Time::now(), hist_trajectories_array_of_arrays_);
   bag.close();
   ROS_INFO("map backup done");
 }
@@ -521,15 +536,15 @@ void TrackingHeatmapNode::computeInitialLikelihoodField(void)
 
   // write to file for documentation purposes
   // global_map_image, likelihood_field, distance_field, likelihood_field_inv, binary_map_image;
-  cv::imwrite(image_output_dir_, global_map_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, likelihood_field, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, distance_field, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, likelihood_field_inv, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, global_map_image_likely, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, global_map_image_inv_likely, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, binary_map_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, heatmap_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-  cv::imwrite(image_output_dir_, heatmap_image_inv, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "global_image.jpg", global_map_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "likelihood_field.jpg", likelihood_field, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "distance_field.jpg", distance_field, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "likelihood_field_inv.jpg", likelihood_field_inv, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "global_map_image_likely.jpg", global_map_image_likely, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "global_map_image_inv_likely.jpg", global_map_image_inv_likely, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "binary_map_image.jpg", binary_map_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "heatmap_image.jpg", heatmap_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+  cv::imwrite(image_output_dir_ + "heatmap_image_inv.jpg", heatmap_image_inv, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
 
   ROS_INFO("computing initial likelihood field done");
 }

@@ -27,8 +27,6 @@
     <param name="grid_map_bagfile_out" value="$(find tuw_tracking_heatmap)/bags/$(arg grid_map_bagfile_out)"/>
     <param name="apply_blur" value="$(arg apply_blur)"/>
     <param name="ksize" value="$(arg ksize)"/>
-    <param name="line_length" value="$(arg line_length)"/>
-    <param name="angle_partitions" value="$(arg angle_partitions)"/>
     <param name="likelihood_field_sigma" value="$(arg likelihood_field_sigma)"/>
     <param name="a_obj" value="$(arg a_obj)" />
     <param name="b_obj" value="$(arg b_obj)" />

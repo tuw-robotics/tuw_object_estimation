@@ -38,6 +38,8 @@
 #include <nav_msgs/Odometry.h>
 #include <cmath>
 #include <tuw_object_msgs/ObjectDetection.h>
+#include <tuw_object_msgs/ObjectWithCovarianceArray.h>
+#include <tuw_object_msgs/ObjectWithCovarianceArrayArray.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <tf/transform_listener.h>
 #include <eigen3/Eigen/Dense>
@@ -66,6 +68,7 @@ private:
   ros::Subscriber subGlobalMap_;
   ros::Publisher pubGridMap_;
   ros::Publisher pubProbVectorField_;
+  ros::Publisher pubHistTrajectories_;
   std::vector<ros::Publisher> pubVectorField_;
 
   ros::Timer timer_;
@@ -81,6 +84,9 @@ private:
   std::string grid_map_bagfile_;
   std::string grid_map_bagfile_out_;
   std::string image_output_dir_;
+  
+  std::map<int, tuw_object_msgs::ObjectWithCovarianceArray> hist_trajectories_;
+  tuw_object_msgs::ObjectWithCovarianceArrayArray hist_trajectories_array_of_arrays_;
 
   bool apply_blur_;
   int ksize_;
