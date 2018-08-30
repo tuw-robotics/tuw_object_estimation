@@ -151,8 +151,8 @@ public:
       }
       else
       {
-        weight_sum_ = 1.0;
-        (*particles_)[i].weight = 1.0 / num_particles_;
+        //weight_sum_ = 1.0;
+        //(*particles_)[i].weight = 1.0 / num_particles_;
       }
     }
 
@@ -173,6 +173,15 @@ public:
                   return (a.weight > b.weight);
                 });
     }
+
+    // output particle array
+    /*
+    for(auto&& it = particles_->begin(); it != particles_->end(); it++)
+    {
+      std::cout << "weight = " << it->weight << ", ";
+    }
+    std::cout << std::endl << "-------------------------------------------------" << std::endl;
+    */
     
     // cluster if no meas, i.e. person possibly occluded
     if(dummy_meas && enable_clustering_ && enable_clustering_config_)

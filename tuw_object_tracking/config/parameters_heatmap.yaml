@@ -2,15 +2,15 @@ num_particles: 100
 print_tracks: false
 print_particles: false
 sigma_meas: 0.3
-cov_scale_meas: 1.4
+cov_scale_meas: 1.0
 sigma_x_sys: 0.1
 sigma_y_sys: 0.1
 sigma_omega_sys: 0.5
 sigma_init_state: 0.05
 resample_rate: 1.0
-deletion_cycles: 30
-deletion_cycles_inv: 2
-promotion_cycles: 3
+deletion_cycles: 40
+deletion_cycles_inv: 15
+promotion_cycles: 2
 angle_partitions: 8
 max_dist_for_association: 3.22
 const_fwd_pred: false
@@ -22,6 +22,6 @@ visual_confirmation_inc: 2
 gamma: 0.35
 motion_model: 2
 measurement_model: 1
-particle_filter_output_modality: 1
+particle_filter_output_modality: 0
 enable_clustering: false
 grid_map_layer: 0

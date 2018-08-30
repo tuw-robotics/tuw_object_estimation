@@ -76,7 +76,8 @@ ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<Part
 
   pub_detection_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("tracked_objects", 100);
   pub_detection_immature_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("immature_tracks", 100);
-  pub_particles_ = nh_.advertise<geometry_msgs::PoseArray>("particles", 100);
+  //pub_particles_ = nh_.advertise<geometry_msgs::PoseArray>("particles", 100);
+  pub_particles_ = nh_.advertise<visualization_msgs::MarkerArray>("particles", 100);
   pub_gridmap_ = nh_.advertise<grid_map_msgs::GridMap>("grid_map", 100);
   pub_cluster_centroids_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("cluster_centroids", 100);
 
@@ -88,6 +89,7 @@ ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<Part
   try
   {
     // read heat map from bag file
+    ROS_INFO("reading heat map from bag file");
     rosbag::Bag bag;
     bag.open(grid_map_bagfile_, rosbag::bagmode::Read);
     rosbag::View view(bag, rosbag::TopicQuery("heatmap_grid_map"));
@@ -99,6 +101,12 @@ ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<Part
     bag.close();
 
     layer_ = &heat_map_["sum"];
+
+    // publish heat map
+    grid_map_msgs::GridMap message;
+    heat_map_.setTimestamp(ros::Time::now().toNSec());
+    grid_map::GridMapRosConverter::toMessage(heat_map_, message);
+    pub_gridmap_.publish(message);
   }
   catch (rosbag::BagIOException e)
   {
@@ -369,9 +377,11 @@ void ObjectTrackingNode::publishTracks(bool particles) const
   cluster_detection.view_direction.z = 0;
   cluster_detection.view_direction.w = 1;
 
-  geometry_msgs::PoseArray pose_array;
-  pose_array.header.stamp = ros::Time::now();
-  pose_array.header.frame_id = common_frame_;
+//  geometry_msgs::PoseArray pose_array;
+//  pose_array.header.stamp = ros::Time::now();
+//  pose_array.header.frame_id = common_frame_;
+
+  visualization_msgs::MarkerArray marker_array;
   
   for (auto it = object_tracker_->getTracks().begin(); it != object_tracker_->getTracks().end(); it++)
   {
@@ -422,6 +432,7 @@ void ObjectTrackingNode::publishTracks(bool particles) const
         auto particles = it->second.particles();
         for (size_t j = 0; j < particles->size(); j++)
         {
+          /*
           geometry_msgs::Pose pose;
           pose.position.x = particles->operator[](j).state(static_cast<int>(State::X));
           pose.position.y = particles->operator[](j).state(static_cast<int>(State::Y));
@@ -435,6 +446,40 @@ void ObjectTrackingNode::publishTracks(bool particles) const
           pose.orientation.w = q.w();
 
           pose_array.poses.emplace_back(pose);
+          */
+
+          visualization_msgs::Marker marker;
+          marker.header.frame_id = common_frame_;
+          marker.header.stamp = ros::Time();
+          marker.ns = "tracking";
+          marker.id = j;
+          marker.type = visualization_msgs::Marker::ARROW;
+          marker.action = visualization_msgs::Marker::ADD;
+          marker.pose.position.x = particles->operator[](j).state(static_cast<int>(State::X));
+          marker.pose.position.y = particles->operator[](j).state(static_cast<int>(State::Y));
+          marker.pose.position.z = 0;
+
+          double state_vx = particles->operator[](j).state(static_cast<int>(State::VX));
+          double state_vy = particles->operator[](j).state(static_cast<int>(State::VY));
+
+          double yaw = atan2(state_vy, state_vx);
+          tf::Quaternion q;
+          q.setRPY(0, 0, yaw);
+          marker.pose.orientation.x = q.x();
+          marker.pose.orientation.y = q.y();
+          marker.pose.orientation.z = q.z();
+          marker.pose.orientation.w = q.w();
+          
+          marker.scale.x = sqrt(state_vx * state_vx + state_vy * state_vy) * 1.5;
+          marker.scale.y = 0.01;
+          marker.scale.z = 0.01;
+
+          marker.color.a = 1.0;
+          marker.color.r = 0.0;
+          marker.color.g = 0.0;
+          marker.color.b = 1.0;
+
+          marker_array.markers.emplace_back(marker);
         }
       }
       
@@ -490,7 +535,10 @@ void ObjectTrackingNode::publishTracks(bool particles) const
   pub_detection_immature_.publish(detection_immature);
   pub_cluster_centroids_.publish(cluster_detection);
   if (particles)
-    pub_particles_.publish(pose_array);
+  {
+    //pub_particles_.publish(pose_array);
+    pub_particles_.publish(marker_array);
+  }
   
   if (config_.print_tracks)
       printTracks(config_.print_particles);

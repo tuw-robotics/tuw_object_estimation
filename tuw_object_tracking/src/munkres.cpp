@@ -332,18 +332,13 @@ void Munkres::step_7(const Matrix<Zero, Dynamic, Dynamic> M, const bool transpos
   {
     for (int c = 0; c < M.cols(); c++)
     {
-      bool col_finish = false;
       if (M(r, c) == STAR)
       {
-        assert(!col_finish);
-
         // restore original arrangement
         if (transpose)
           result[i] = std::pair<int, int>(c, r);
         else
           result[i] = std::pair<int, int>(r, c);
-
-        col_finish = true;
         i++;
       }
     }

@@ -51,7 +51,9 @@ double MahalanobisMeasModel::getProbability(const Ref<const VectorXd>& curr_stat
   // only measurement provides covariance
   // mahalanobis distance is chi_square distributed
   
-  double dist = sqrt((curr_state.block<2, 1>(0, 0) - meas).transpose() * (meas_cov.block<2, 2>(0, 0).inverse() * cov_scale_) * (curr_state.block<2, 1>(0, 0) - meas));
+  double dist = sqrt((curr_state.block<2, 1>(0, 0) - meas).transpose() * 
+                    ((meas_cov.block<2, 2>(0, 0) * cov_scale_).inverse()) * 
+                    (curr_state.block<2, 1>(0, 0) - meas));
   
   //boost::math::normal norm = boost::math::normal(0, sigma_ * sigma_);
   boost::math::chi_squared chi(2);
