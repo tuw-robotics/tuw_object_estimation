@@ -562,12 +562,11 @@ void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovari
   init_state(6) = 0;
 
   int id = objectTracker().createTrack(init_state);
-  /*
+  
   object_tracker_->getTracks().at(id).setVisibility(true);
   object_tracker_->getTracks().at(id).setVisualConfirmation(true);
   for(int i = 0; i < 100; i++)
     object_tracker_->getTracks().at(id).incVisualConfirmation();
-  */
 
   ROS_INFO("create track with initial pose: (%f, %f) with id: %d", init_state(0), init_state(1), id);
 

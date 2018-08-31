@@ -12,7 +12,7 @@
   <arg name="robot_name" default="r0"/>
   
   <group ns="$(arg robot_name)">
-    <node pkg="tuw_object_tracking" type="tuw_object_tracking_node" name="tuw_people_tracking_node" output="screen" >
+    <node pkg="tuw_object_tracking" type="tuw_object_tracking_node" name="tuw_people_tracking_node" output="screen">
       <remap from="detection" to="$(arg detection)"/>
       <remap from="grid_map" to="$(arg grid_map_frame)"/>
       <remap from="initialpose" to="$(arg initialpose)"/>

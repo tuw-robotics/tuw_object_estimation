@@ -48,7 +48,7 @@ public:
   
   int createTrack(const Eigen::Matrix<double, STATE_SIZE, 1> init_state);
   void deleteTrack(const int track_id);
-  const std::map<int, Track<STATE_SIZE>>& getTracks() const;
+  std::map<int, Track<STATE_SIZE>>& getTracks();
   void addDetection(const MeasurementObjectConstPtr& detection);
   void predict(boost::posix_time::ptime current_time_stamp);
   void clearDetections();

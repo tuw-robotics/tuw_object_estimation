@@ -53,7 +53,7 @@ void ObjectTracker::deleteTrack(const int track_id)
   tracks_.erase(track_id);
 }
 
-const std::map<int, Track<STATE_SIZE>>& ObjectTracker::getTracks() const
+std::map<int, Track<STATE_SIZE>>& ObjectTracker::getTracks() 
 {
   return tracks_;
 }
