@@ -47,7 +47,8 @@ HeatMapSystemModel::HeatMapSystemModel(double sigma_x, double sigma_y, double si
   heat_map_ = heat_map;
   layer_ = layer;
   angle_partitions_ = angle_partitions;
-  direction_probabilities_.resize(angle_partitions);
+//  direction_probabilities_.resize(angle_partitions);
+  direction_probabilities_.assign(angle_partitions, 1.0);
   weight_factor_.resize(angle_partitions);
   gamma_ = gamma;
   
@@ -78,10 +79,11 @@ void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
   grid_map::Position pos(state(static_cast<int>(State::X)), state(static_cast<int>(State::Y)));
   double theta_tar;
   int direction;
+  
+  direction_probabilities_.assign(angle_partitions_, 1.0);
 
   if (heat_map_.getIndex(pos, idx))
   {
-
     bool all_zero = true;
     
     for(int i = 0; i < angle_partitions_; i++)
@@ -90,6 +92,34 @@ void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
       
       grid_map::Index next_idx;
       grid_map::Position next_pos = pos + grid_map::Position(r * cos(theta_tar), r * sin(theta_tar));
+      
+      // line iterator from idx to next_idx
+      // multiply values
+      
+      if(heat_map_.getIndex(next_pos, next_idx))
+      {
+        unsigned int it_steps = 0;
+        for(grid_map::LineIterator it(heat_map_, idx, next_idx); !it.isPastEnd(); ++it)
+        {
+          const grid_map::Index current_idx(*it);
+          const size_t lin_idx = grid_map::getLinearIndexFromIndex(current_idx, heat_map_.getSize());
+          
+          direction_probabilities_[i] *= (*layer_)(lin_idx);
+          //std::cout << "dir prob(" << i << ") = " << direction_probabilities_[i] << std::endl;
+          
+          it_steps++;
+        }
+        // normalize bc of line iterator steps
+        // also dep. on velocity length might be different
+        direction_probabilities_[i] /= static_cast<double>(it_steps); 
+        direction_probabilities_[i] *= weight_factor_[i];
+        
+        if(direction_probabilities_.back() != 0.0)
+        {
+          all_zero = false;
+        }
+      }
+      /*
       if(heat_map_.getIndex(next_pos, next_idx))
       {        
         const size_t lin_idx = grid_map::getLinearIndexFromIndex(next_idx, heat_map_.getSize());
@@ -101,10 +131,10 @@ void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
           all_zero = false;
         }
         
-      }
+      }*/
       else
       {
-        direction_probabilities_.at(i) = 0.0;
+        direction_probabilities_[i] = 0.0;
       }
     }
 

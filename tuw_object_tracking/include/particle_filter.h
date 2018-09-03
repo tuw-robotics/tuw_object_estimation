@@ -359,6 +359,9 @@ private:
 
   std::shared_ptr<SystemModel> system_model_;
   std::shared_ptr<MeasModel> meas_model_;
+  std::shared_ptr<SystemModel> system_model_inv_;
+  std::shared_ptr<MeasModel> meas_model_inv_;
+  
   std::shared_ptr<std::vector<Particle> > particles_;
   std::shared_ptr<Eigen::Matrix<double, stateDim, stateDim> > cov_;
   std::shared_ptr<Eigen::Matrix<double, stateDim, 1> > mean_;

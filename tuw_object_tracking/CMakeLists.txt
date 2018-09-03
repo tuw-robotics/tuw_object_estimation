@@ -17,7 +17,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 MESSAGE( STATUS "CMAKE_CXX_FLAGS_DEBUG:         " ${CMAKE_CXX_FLAGS_DEBUG} )
 endif(CMAKE_BUILD_TYPE MATCHES Debug)
 
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -149,7 +148,9 @@ add_library(${PROJECT_NAME}
   src/const_vel_system_model.cpp
   src/simple_meas_model.cpp
   src/mahalanobis_meas_model.cpp
+  src/mahalanobis_meas_model_inv.cpp
   src/heatmap_system_model.cpp
+  src/heatmap_system_model_inv.cpp
   src/coordinated_turn_system_model.cpp
   src/const_acc_system_model.cpp
   src/munkres.cpp
