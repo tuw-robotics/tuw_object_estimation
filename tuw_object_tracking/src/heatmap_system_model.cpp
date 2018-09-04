@@ -64,7 +64,7 @@ HeatMapSystemModel::HeatMapSystemModel(double sigma_x, double sigma_y, double si
   }
 }
 
-void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
+void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas = Eigen::VectorXd(), const Eigen::Ref<const Eigen::MatrixXd>& meas_cov = Eigen::MatrixXd())
 {  
   // check param dimensions
   assert(state.size() >= state_size_);
@@ -165,9 +165,4 @@ void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
   sample(static_cast<int>(State::VY)) = r * sin(theta_next) + dt * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
 
   state = sample;
-}
-
-void HeatMapSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m)
-{
-  sample(state, dt);
 }

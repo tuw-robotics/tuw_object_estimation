@@ -39,7 +39,7 @@ SimpleMeasModel::SimpleMeasModel(double sigma)
   sigma_ = sigma;
 }
 
-double SimpleMeasModel::getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov)
+double SimpleMeasModel::getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov, double dt)
 {
   // simple measurement model, position directly observable (by detector)
   // state = [x, y, vx, vy]^T

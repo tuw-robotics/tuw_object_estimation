@@ -40,8 +40,7 @@ class CoordinatedTurnSystemModel : public SystemModel
 public:
   CoordinatedTurnSystemModel(double sigma_x, double sigma_y, double sigma_omega);
 
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt) override;
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m) override;
+  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov) override;
 
 private:
   std::mt19937 generator_;                                /// random number generator

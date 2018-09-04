@@ -45,7 +45,7 @@ CoordinatedTurnSystemModel::CoordinatedTurnSystemModel(double sigma_x, double si
   sigma_omega_ = sigma_omega;
 }
 
-void CoordinatedTurnSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
+void CoordinatedTurnSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov)
 {
   assert(state.size() >= state_size_);
   Eigen::VectorXd sample = state;
@@ -88,9 +88,4 @@ void CoordinatedTurnSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, doubl
   }
   
   state = sample;
-}
-
-void CoordinatedTurnSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m)
-{
-  sample(state, dt);
 }

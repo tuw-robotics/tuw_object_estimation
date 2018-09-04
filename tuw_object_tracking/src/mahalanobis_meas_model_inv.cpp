@@ -34,12 +34,12 @@
 #include "multivariate_gaussian_sampler.h"
 
 
-MahalanobisMeasModelInv::MahalanobisMeasModelInv(double cov_scale) : state_size_(4)
+MahalanobisMeasModelInv::MahalanobisMeasModelInv(double cov_scale) : SystemModel(4)
 {
   cov_scale_ = cov_scale;
 }
 
-void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov)
+void MahalanobisMeasModelInv::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov)
 {
   // check param dimensions
   assert(state.size() >= state_size_);

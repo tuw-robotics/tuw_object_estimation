@@ -41,8 +41,7 @@ class HeatMapSystemModel : public SystemModel
 public:
   HeatMapSystemModel(double sigma_x, double sigma_y, double sigma_theta, int angle_partitions, double gamma, grid_map::GridMap& heat_map, grid_map::Matrix* layer);
 
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt) override;
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m) override;
+  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov) override;
 
 private:
   std::mt19937 generator_;                                /// random number generator

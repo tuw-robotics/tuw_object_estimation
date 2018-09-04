@@ -33,10 +33,12 @@
 #include "tuw_object_tracking_node.h"
 #include <const_vel_system_model.h>
 #include <heatmap_system_model.h>
+#include <heatmap_system_model_inv.h>
 #include <const_acc_system_model.h>
 #include <coordinated_turn_system_model.h>
 #include <simple_meas_model.h>
 #include <mahalanobis_meas_model.h>
+#include <mahalanobis_meas_model_inv.h>
 #include <tuw_geometry/tuw_geometry.h>
 #include <iostream>
 #include <visualization_msgs/MarkerArray.h>
@@ -145,6 +147,7 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
     case 2:  // heatmap
       object_tracker_->pf_config_->system_model =
           std::make_shared<HeatMapSystemModel>(config.sigma_x_sys, config.sigma_y_sys, config.sigma_omega_sys, config.angle_partitions, config.gamma, heat_map_, layer_);
+      object_tracker_->pf_config_->meas_model_inv = std::make_shared<MahalanobisMeasModelInv>(config.cov_scale_meas);
       std::cout << "switch to heatmap model" << std::endl;
       break;
     case 3:  // constant acceleration
@@ -165,6 +168,7 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
       break;
     case 1: // mahalanobis distance measurement model
       object_tracker_->pf_config_->meas_model = std::make_shared<MahalanobisMeasModel>(config.cov_scale_meas);
+      object_tracker_->pf_config_->system_model_inv = std::make_shared<HeatMapSystemModelInv>(config.sigma_omega_sys, config.angle_partitions, heat_map_, layer_);
       break;
   }
 

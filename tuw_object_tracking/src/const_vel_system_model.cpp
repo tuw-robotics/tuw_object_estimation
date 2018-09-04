@@ -43,7 +43,7 @@ ConstVelSystemModel::ConstVelSystemModel(double sigma_x, double sigma_y) : Syste
   sigma_y_ = sigma_y;
 }
 
-void ConstVelSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
+void ConstVelSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov)
 {
   // motion model (constant velocity)
   // state = [x, y, vx, vy]^T
@@ -74,9 +74,4 @@ void ConstVelSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
                     + dt * sigma_y_ * sigma_y_ * normal_distribution_(generator_);
 
   state = sample;
-}
-
-void ConstVelSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m)
-{
-  sample(state, dt);
 }
