@@ -148,9 +148,7 @@ add_library(${PROJECT_NAME}
   src/const_vel_system_model.cpp
   src/simple_meas_model.cpp
   src/mahalanobis_meas_model.cpp
-  src/mahalanobis_meas_model_inv.cpp
   src/heatmap_system_model.cpp
-  src/heatmap_system_model_inv.cpp
   src/coordinated_turn_system_model.cpp
   src/const_acc_system_model.cpp
   src/munkres.cpp
