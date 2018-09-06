@@ -456,8 +456,9 @@ void ObjectTrackingNode::publishTracks(bool particles) const
           marker.header.frame_id = common_frame_;
           marker.header.stamp = ros::Time();
           marker.ns = "tracking";
-          marker.id = j;
+          marker.id = it->first * particles->size() + j;
           marker.type = visualization_msgs::Marker::ARROW;
+          marker.lifetime = ros::Duration(0.1);
           marker.action = visualization_msgs::Marker::ADD;
           marker.pose.position.x = particles->operator[](j).state(static_cast<int>(State::X));
           marker.pose.position.y = particles->operator[](j).state(static_cast<int>(State::Y));

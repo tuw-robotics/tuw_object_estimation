@@ -53,7 +53,7 @@ bool ObjectTrackerSeparate::calcAssignments(const MeasurementObjectConstPtr& det
   int n = tracks_.size() > detection->size() ? tracks_.size() : detection->size();
 
   D.resize(n, n);
-
+  
   int track_idx = 0;
   size_t detection_idx = 0;
 
@@ -61,7 +61,7 @@ bool ObjectTrackerSeparate::calcAssignments(const MeasurementObjectConstPtr& det
   {
     for (detection_idx = 0; detection_idx < (*detection).size(); detection_idx++)
     {
-      //Eigen::Matrix<double, 2, 2> S = (*detection)[detection_idx].covariance.block<2, 2>(0, 0);
+      Eigen::Matrix<double, 2, 2> S = (*detection)[detection_idx].covariance.block<2, 2>(0, 0);
       //S = S + track.second.stateCovariance()->block<2, 2>(0, 0);
 
       Eigen::Matrix<double, 2, 1> detection_position;
@@ -70,22 +70,26 @@ bool ObjectTrackerSeparate::calcAssignments(const MeasurementObjectConstPtr& det
 
       Eigen::Matrix<double, 2, 1> track_position = track.second.estimatedState().block<2, 1>(0, 0);
 
-      Eigen::Matrix<double, 2, 2> C = (*detection)[detection_idx].covariance.block<2, 2>(0, 0);
+      //Eigen::Matrix<double, 2, 2> C = (*detection)[detection_idx].covariance.block<2, 2>(0, 0);
 
       if (t_config_->use_mahalanobis && detection->sensor_type() != SENSOR_TYPE_GENERIC_MONOCULAR_VISION)
       {
         // calculate mahalanobis distance between detection and track
         //D(track_idx, detection_idx) = sqrt((detection_position - track_position).transpose() * S.inverse() *
         //                                   (detection_position - track_position));
-
+        
         D(track_idx, detection_idx) = 0.0;
 
         // alternative per particle distance
         for (auto&& p : (*track.second.particles()))
         {
           D(track_idx, detection_idx) +=
-              sqrt((p.state.block<2, 1>(0, 0) - detection_position).transpose() * ((C.block<2, 2>(0, 0)).inverse()) *
-                   (p.state.block<2, 1>(0, 0) - detection_position));
+              sqrt((detection_position - p.state.block<2, 1>(0, 0)).transpose() * ((S.block<2, 2>(0, 0)).inverse()) *
+                   (detection_position - p.state.block<2, 1>(0, 0)));
+        }
+        if (track.second.particles()->size() > 0)
+        {
+          D(track_idx, detection_idx) /= track.second.particles()->size();
         }
       }
       else if (detection->sensor_type() == SENSOR_TYPE_GENERIC_MONOCULAR_VISION)
@@ -119,7 +123,7 @@ bool ObjectTrackerSeparate::calcAssignments(const MeasurementObjectConstPtr& det
     }
     track_idx++;
   }
-
+  
   // augment matrix to square size
   for (int i = track_idx; i < n; i++)
   {
@@ -139,7 +143,7 @@ bool ObjectTrackerSeparate::calcAssignments(const MeasurementObjectConstPtr& det
   // elements mean assign track 1 to meas assignment[1] etc.
   // hungarian algorithm / munkres algorithm O(n^3)
   std::vector<std::pair<int, int>> assignment_pairs = tuw::Munkres::find_minimum_assignment(D);
-
+  
   assignment.resize(n);
 
   for (auto&& a = assignment_pairs.begin(); a != assignment_pairs.end(); a++)
