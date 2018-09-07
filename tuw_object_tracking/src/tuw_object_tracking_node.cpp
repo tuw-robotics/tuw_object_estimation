@@ -188,6 +188,7 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
   object_tracker_->t_config_->max_dist_for_association = config.max_dist_for_association;
   object_tracker_->t_config_->visually_confirmed = config.visually_confirmed;
   object_tracker_->t_config_->use_mahalanobis = config.use_mahalanobis;
+  object_tracker_->t_config_->use_particle_mahalanobis = config.use_particle_mahalanobis;
   object_tracker_->t_config_->visual_confirmation_inc = config.visual_confirmation_inc;
 
   // update existing tracks
@@ -316,10 +317,7 @@ void ObjectTrackingNode::detectionCallback(const tuw_object_msgs::ObjectDetectio
 
   object_tracker_->addDetection(meas);
   
-  if (config_.print_tracks)
-    printTracks(config_.print_particles);
-  publishTracks(true);
-
+  //publishTracks(true);
 }
 
 void ObjectTrackingNode::printTracks(bool particles) const
@@ -575,7 +573,7 @@ void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovari
 
   ROS_INFO("create track with initial pose: (%f, %f) with id: %d", init_state(0), init_state(1), id);
 
-  publishTracks(true);
+  //publishTracks(true);
   //printTracks(true);
 
   // publish heat map
@@ -616,6 +614,7 @@ int main(int argc, char** argv)
   t_config->max_dist_for_association = 2.0;
   t_config->visually_confirmed = false;
   t_config->use_mahalanobis = false;
+  t_config->use_particle_mahalanobis = false;
 
   ObjectTrackingNode object_tracking_node(nh, pf_config, t_config);
 
