@@ -52,6 +52,7 @@ public:
   void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose);
   void printTracks(bool particles) const;
   void publishTracks(bool particles) const;
+  void forwardSimulation(int steps) const;
   ObjectTracker& objectTracker() const;
 private:
   ros::NodeHandle nh_;
@@ -64,6 +65,7 @@ private:
   ros::Publisher pub_detection_;
   ros::Publisher pub_detection_immature_;
   ros::Publisher pub_particles_;
+  ros::Publisher pub_sim_particles_;
   ros::Publisher pub_gridmap_;
   ros::Publisher pub_cluster_centroids_;
   

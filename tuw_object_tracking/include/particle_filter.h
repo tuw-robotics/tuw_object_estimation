@@ -105,6 +105,15 @@ public:
     updateMeanAndCov();
   }
 
+  void simulate(double dt, std::vector<Particle>& particles)
+  {
+    // forward prediction
+    for (size_t i = 0; i < particles.size(); i++)
+    {
+      system_model_->sample(particles[i].state, dt);
+    }
+  }
+  
   void predict(boost::posix_time::ptime current_time_stamp)
   {
     (void)updateTimestamp(current_time_stamp);
@@ -123,7 +132,11 @@ public:
     if (dt <= 0.0)
       return;
 
-    resample();
+    // only resample if not all equal weight
+    if(std::any_of(particles_->begin(), particles_->end(), [&](Particle a) { return a.weight != particles_->begin()->weight; }))
+    {
+      resample();
+    }
 
     // forward prediction
     for (size_t i = 0; i < particles_->size(); i++)
@@ -171,7 +184,8 @@ public:
       }
 
       // sort particles_[0] has largest weight
-      std::sort(particles_->begin(), particles_->end(), [&](Particle a, Particle b) { return (a.weight > b.weight); });
+      //std::sort(particles_->begin(), particles_->end(), [&](Particle a, Particle b) { return (a.weight > b.weight); });
+      std::stable_sort(particles_->begin(), particles_->end(), [&](Particle a, Particle b) { return (a.weight > b.weight); });
     }
 
     // output particle array
