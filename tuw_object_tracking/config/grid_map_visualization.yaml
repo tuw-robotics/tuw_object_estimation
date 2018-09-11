@@ -4,15 +4,33 @@ grid_map_visualizations:
     type: flat_point_cloud
     params:
       height: 0.0
-  - name: likelihood_field
+  - name: heatmap_occ_likelihood_field
     type: occupancy_grid
     params:
       layer: likelihood_field
       data_min: 0.0
       data_max: 1.0
-  - name: heatmap_occ
+  - name: heatmap_occ_sum
     type: occupancy_grid
     params:
       layer: sum
       data_min: 0
-      data_max: 2.7
+      data_max: 15
+  - name: heatmap_occ_sum_blur
+    type: occupancy_grid
+    params:
+      layer: sum_blur
+      data_min: 0
+      data_max: 15
+  - name: heatmap_occ_all_dirs
+    type: occupancy_grid
+    params:
+      layer: all_dirs
+      data_min: 0
+      data_max: 15
+  - name: heatmap_occ_all_dirs_blur
+    type: occupancy_grid
+    params:
+      layer: all_dirs_blur
+      data_min: 0
+      data_max: 15
