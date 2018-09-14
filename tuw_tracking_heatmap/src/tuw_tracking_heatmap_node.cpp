@@ -68,7 +68,7 @@ TrackingHeatmapNode::TrackingHeatmapNode(ros::NodeHandle& n) : n_(n), n_param_("
   ROS_INFO("initializing tracking heatmap node");
   
   
-  subTrackings_ = n.subscribe("/human_detections", 1, &TrackingHeatmapNode::trackingCallback, this);
+  subTrackings_ = n.subscribe("/human_detections", 50, &TrackingHeatmapNode::trackingCallback, this);
   subGlobalMap_ = n.subscribe("/map", 1, &TrackingHeatmapNode::globalMapCallback, this);
   pubGridMap_ = n.advertise<grid_map_msgs::GridMap>("grid_map", 1, true);
   pubVectorField_.emplace_back(n.advertise<visualization_msgs::MarkerArray>("/vector_field_north", 1, true));
@@ -119,16 +119,6 @@ TrackingHeatmapNode::TrackingHeatmapNode(ros::NodeHandle& n) : n_(n), n_param_("
     if (!map_.exists("sum"))
       map_.add("sum", 0.0);
 
-    if (apply_blur_)
-    {
-      ROS_INFO("applying Gaussian blur");
-      // blur grid map
-      cv::Mat originalImage, blurredImage;
-      grid_map::GridMapCvConverter::toImage<unsigned short, 1>(map_, "all_dirs", CV_16UC1, 0.0, 30.0, originalImage);
-      cv::GaussianBlur(originalImage, blurredImage, cv::Size(ksize_, ksize_), 0.0, 0.0);
-      grid_map::GridMapCvConverter::addLayerFromImage<unsigned short, 1>(blurredImage, "all_dirs", map_, 0.0, 30.0);
-    }
-
     // normalize heatmap to values of likelihood field
     float max = map_["likelihood_field"].maxCoeff();
     float min = map_["likelihood_field"].minCoeff();
@@ -151,14 +141,43 @@ TrackingHeatmapNode::TrackingHeatmapNode(ros::NodeHandle& n) : n_(n), n_param_("
     grid_map::GridMapCvConverter::toImage<float, 1>(map_, "sum", CV_32FC1, 0, map_["sum"].maxCoeff(), result);
     result.convertTo(result, CV_8UC3, 255.0);
     cv::applyColorMap(result, all_dirs_and_initial_heatmap_image, cv::COLORMAP_JET);
-    cv::imwrite(image_output_dir_, result, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
-    cv::imwrite(image_output_dir_, all_dirs_and_initial_heatmap_image,
+    cv::imwrite(image_output_dir_ + "result.jpg", result, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+    cv::imwrite(image_output_dir_ + "all_dirs_and_initial_heatmap.jpg", all_dirs_and_initial_heatmap_image,
                 std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+
+    if (apply_blur_)
+    {
+      ROS_INFO("applying Gaussian blur");
+      // blur grid map
+      cv::Mat originalImage, blurredImage;
+      grid_map::GridMapCvConverter::toImage<unsigned short, 1>(map_, "all_dirs", CV_16UC1, 0.0, 30.0, originalImage);
+      cv::GaussianBlur(originalImage, blurredImage, cv::Size(ksize_, ksize_), 0.0, 0.0);
+      grid_map::GridMapCvConverter::addLayerFromImage<unsigned short, 1>(blurredImage, "all_dirs_blur", map_, 0.0, 30.0);
+
+        for (size_t row = 0; row < map_["all_dirs_blur"].rows(); row++)
+        {
+          for (size_t col = 0; col < map_["all_dirs_blur"].cols(); col++)
+          {
+            map_["all_dirs"](row, col) = (map_["all_dirs_blur"](row, col) - min) / (max - min);
+          }
+        }
+
+        map_.add("sum_blur", map_["likelihood_field"] + map_["all_dirs_blur"]);
+
+        // add layer which is a sum of all_dirs and the initial likelihood_field
+        grid_map::GridMapCvConverter::toImage<float, 1>(map_, "sum_blur", CV_32FC1, 0, map_["sum_blur"].maxCoeff(), result);
+        result.convertTo(result, CV_8UC3, 255.0);
+        cv::applyColorMap(result, all_dirs_and_initial_heatmap_image, cv::COLORMAP_JET);
+        cv::imwrite(image_output_dir_ + "result_blur.jpg", result, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+        cv::imwrite(image_output_dir_ + "all_dirs_and_initial_heatmap_blur.jpg", all_dirs_and_initial_heatmap_image,
+                    std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+    }
+
     cv::namedWindow("Display window 1", cv::WINDOW_NORMAL);
     cv::imshow("Display window 1", all_dirs_and_initial_heatmap_image);
     cv::waitKey(500);
 
-    precomputeVectorField();
+    //precomputeVectorField();
     if (compute_social_forces_)
     {
       computeSocialForces();
@@ -248,6 +267,7 @@ void TrackingHeatmapNode::globalMapCallback(const nav_msgs::OccupancyGrid::Const
     // createPathObstacleMap();
   }
 
+  map_.setTimestamp(ros::Time::now().toNSec());
   ROS_INFO("map backup");
   grid_map_msgs::GridMap message;
   GridMapRosConverter::toMessage(map_, message);
@@ -264,8 +284,8 @@ void TrackingHeatmapNode::trackingCallback(const tuw_object_msgs::ObjectDetectio
   std_msgs::Header header = _detection->header;
   for (auto it = _detection->objects.begin(); it != _detection->objects.end(); it++)
   {
-    hist_trajectories_[it->object.ids[0]].objects.emplace_back(*it);
-    hist_trajectories_[it->object.ids[0]].header = header;
+    //hist_trajectories_[it->object.ids[0]].objects.emplace_back(*it);
+    //hist_trajectories_[it->object.ids[0]].header = header;
     object = (*it).object;
     double speed =
         std::sqrt(object.twist.linear.x * object.twist.linear.x + object.twist.linear.y * object.twist.linear.y);
@@ -480,7 +500,12 @@ void TrackingHeatmapNode::computeInitialLikelihoodField(void)
   cv::cvtColor(global_map_image, global_map_image_likely, CV_GRAY2RGB);
   cv::cvtColor(global_map_image, global_map_image_inv_likely, CV_GRAY2RGB);
 
+  double min, max;
+
+  cv::imwrite(image_output_dir_ + "global_image_XX.jpg", global_map_image, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
+
   cv::distanceTransform(global_map_image, distance_field, CV_DIST_L2, CV_DIST_MASK_5);
+  cv::imwrite(image_output_dir_ + "distance_field_image_XX.jpg", distance_field, std::vector<int>({ CV_IMWRITE_JPEG_QUALITY, 100 }));
   distance_field_meters = distance_field * map_.getResolution();  // map resolution
   boost::math::normal normal_likelihood_field = boost::math::normal(0, likelihood_field_sigma_);
 
@@ -492,7 +517,6 @@ void TrackingHeatmapNode::computeInitialLikelihoodField(void)
     }
   }
 
-  double min, max;
   cv::minMaxLoc(likelihood_field, &min, &max);
 
   cv::subtract(cv::Scalar::all(max), likelihood_field, likelihood_field_inv);
