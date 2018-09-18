@@ -643,7 +643,7 @@ void ObjectTrackingNode::forwardSimulation(int steps) const
           {
             marker.color.a = 1.0;
             marker.color.r = 0.0;
-            marker.color.g = 1.0;
+            marker.color.g = 0.6;
             marker.color.b = 0.0;
           }
 
