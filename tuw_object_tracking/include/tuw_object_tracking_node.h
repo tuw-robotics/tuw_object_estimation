@@ -43,16 +43,67 @@
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <memory>
 
+/*!
+ * ROS node that implements the object tracker. Provides interfaces for detections from different sensors,
+ * and publishes tracks using tuw_object_msgs. Tracked objects can be visualized using ROS rviz.
+ */
 class ObjectTrackingNode
 {
 public:
+  /*!
+   * Constructor
+   * 
+   * @param nh Node Node Handle
+   * @param pf_config Particle filter configuration struct
+   * @param t_config Object tracker configuration struct
+   */
   ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<ParticleFilterConfig> pf_config, std::shared_ptr<TrackerConfig> t_config);
+  
+  /*!
+   * Dynamic reconfigure callback.
+   */
   void callbackParameters(tuw_object_tracking::tuw_object_trackingConfig &config, uint32_t level);
+  
+  /*!
+   * Object detection callback. Receives detections from other ROS nodes and passes them to the object tracker.
+   * 
+   * @param detection Received detection msg.
+   */
   void detectionCallback(const tuw_object_msgs::ObjectDetection& detection);
+  
+  /*!
+   * Creates a track from a pose. Used with the rviz initialpose for testing / debugging.
+   * 
+   * @param pose Initial pose of the created track
+   */
   void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose);
+  
+  /*!
+   * Prints tracks and optionally particles to command line.
+   * 
+   * @param particles If true particles will be printed as well.
+   */
   void printTracks(bool particles) const;
+  
+  /*!
+   * Publishes Tracks.
+   * 
+   * @param particles If true particles will be published as well.
+   */
   void publishTracks(bool particles) const;
+  
+  /*!
+   * Forward simulates particles for visualization purposes using marker msgs.
+   * 
+   * @param steps Number of steps particles shell be forward simulated.
+   */
   void forwardSimulation(int steps) const;
+  
+  /*!
+   * Getter function for the ObjectTracker
+   * 
+   * @return returns a reference to the used object tracker.
+   */
   ObjectTracker& objectTracker() const;
 private:
   ros::NodeHandle nh_;
@@ -60,7 +111,7 @@ private:
   ros::Subscriber sub_detection_;
   ros::Subscriber sub_initial_pose_;
   ros::Subscriber sub_occupancy_map_;
-  std::vector<std::string> detection_topics_;
+  std::vector<std::string> detection_topics_;  /// detection topics subscribed to, can be configured using a .yaml file
   std::vector<ros::Subscriber> sub_vector_;
   ros::Publisher pub_detection_;
   ros::Publisher pub_detection_immature_;

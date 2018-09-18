@@ -38,9 +38,21 @@
 class ConstVelSystemModel : public SystemModel
 {
 public:
+  /*!
+   * Constructor
+   * @param sigma_x Acceleration noise in x-direction
+   * @param sigma_y Acceleration noise in y-direction
+   */
   ConstVelSystemModel(double sigma_x, double sigma_y);
-  //~ConstVelSystemModel();
 
+  /*!
+   * Forward predicts a particle assuming nearly (noisy) constant velocity
+   * 
+   * @param state Current state of the tracked object / returns next state
+   * @param dt Forward prediction time
+   * @param meas (optional) Current measurement if used in forward prediction
+   * @param meas_cov (optional) Corresponding measurement covariance
+   */
   void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov) override;
 private:
   std::mt19937 generator_;                                /// random number generator
