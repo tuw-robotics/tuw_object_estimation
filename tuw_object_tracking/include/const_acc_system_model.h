@@ -38,8 +38,22 @@
 class ConstAccSystemModel : public SystemModel
 {
 public:
+  /*!
+   * Constructor
+   * 
+   * @param sigma_x Sigma for acceleration noise in x-direction
+   * @param sigma_y Sigma for acceleration noise in y-direction
+   */
   ConstAccSystemModel(double sigma_x, double sigma_y);
 
+  /*!
+   * Forward predicts a particle assuming nearly (noisy) constant acceleration
+   * 
+   * @param state Current state of the tracked object / returns next state
+   * @param dt Forward prediction time
+   * @param meas (optional) Current measurement if used in forward prediction
+   * @param meas_cov (optional) Corresponding measurement covariance
+   */
   void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov) override;
 
 private:

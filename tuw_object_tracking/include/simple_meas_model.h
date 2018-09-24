@@ -41,6 +41,17 @@ public:
   SimpleMeasModel(double sigma);
   //~SimpleMeasModel();
 
+  /*!
+  * Returns the probability of a measurement given the current particle state
+  * using euclidean distance assumed to be normal distributed.
+  * 
+  * @param curr_state Current state of the particle
+  * @param meas Received measurement
+  * @param meas_cov Corresponding covariance Matrix
+  * @param dt (optional) timestep, used to predict particles according to measurement model
+  * 
+  * @return probability of meas given curr_state
+  */
   double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov, double dt = 0) override;
 private:
   double sigma_;

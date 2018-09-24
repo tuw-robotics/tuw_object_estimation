@@ -7,6 +7,9 @@
 #include <eigen3/Eigen/Dense>
 #include <random>
 
+/*!
+ * @brief Generates multivariate Gaussian Samples
+ */
 template<typename T> struct MultivariateGaussianSampler {
     MultivariateGaussianSampler ( Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> const& covar )
         : MultivariateGaussianSampler ( Eigen::Matrix<T, Eigen::Dynamic, 1>::Zero ( covar.rows() ), covar )

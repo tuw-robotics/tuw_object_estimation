@@ -38,12 +38,24 @@
 #include <track.h>
 #include <common.h>
 
+/*!
+ * This class implements a tracking algorithm using separate particle filters for each object to track.
+ */
 class ObjectTrackerSeparate : public ObjectTracker
 {
 public:
   ObjectTrackerSeparate(std::shared_ptr<ParticleFilterConfig> pf_config, std::shared_ptr<TrackerConfig> t_config);
   void update() override;
 private:
+  /*!
+   * Defines best assignments between tracks and detections using the Kuhn-Munkres algorithm.
+   * 
+   * @param detection Pointer to the detections that should be matched
+   * @param assignment Array which holds track <-> detection assignments track 1 is assigned to measurement assignment[1]
+   * @param D Cost matrix defined by a distance measure between tracks and detections (i.e. Mahalanobis distance)
+   * 
+   * @return Returns true if sucessfully assigned with detection size > 0
+   */
   bool calcAssignments(const MeasurementObjectConstPtr& detection, std::vector<int>& assignment, Eigen::MatrixXd& D);
 };
 
