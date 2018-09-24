@@ -42,16 +42,32 @@
 
 using namespace tuw;
 
+/*!
+ * @brief SIR Particle filter class for generic state dimension.
+ * 
+ * Generic SIR particle filter class using system models derived from SystemModel and 
+ * measurement models derived from MeasModel.
+ *
+ * @tparam stateDim State dimension used in the particle filter
+ */
 template <int stateDim>
 class ParticleFilter
 {
 public:
+  /*!
+   * Particle data struct containing state and weight.
+   */
   struct Particle
   {
     Eigen::Matrix<double, stateDim, 1> state;
     double weight;
   };
 
+  /*!
+   * Particle filter constructor
+   * 
+   * @param config Particle filter configuration struct, containing system model, meas model, ...
+   */
   ParticleFilter(std::shared_ptr<ParticleFilterConfig> config)
     : system_model_(config->system_model)
     , meas_model_(config->meas_model)
@@ -77,6 +93,10 @@ public:
     weight_sum_ = 1.0;
   }
 
+  /*!
+   * Configuration update function
+   * @param config New configuration struct
+   */
   void updateConfig(std::shared_ptr<ParticleFilterConfig> config)
   {
     system_model_ = config->system_model;
@@ -89,6 +109,12 @@ public:
     particle_filter_output_modality_ = config->particle_filter_output_modality;
   }
 
+  /*!
+   * Initialize a new track around an initial state.
+   * 
+   * @param init_state Initial state around which the track is initialized.
+   * @param sigma Standard deviation to distribute particles in a normal distribution around the initial state.
+   */
   // generate normal distributed particles around init_state
   void initAroundState(const Eigen::Matrix<double, stateDim, 1>& init_state, double sigma)
   {
@@ -105,6 +131,12 @@ public:
     updateMeanAndCov();
   }
 
+  /*!
+   * Forward simulate a specific set of particles. Can be used for visualization purposes.
+   * 
+   * @param dt Time interval for forward simulation.
+   * @param particles Vector of particles which shell be forward predicted.
+   */
   void simulate(double dt, std::vector<Particle>& particles)
   {
     // forward prediction
@@ -114,6 +146,11 @@ public:
     }
   }
   
+  /*!
+   * Main forward prediction function. Uses the system model to predict new particle states.
+   * 
+   * @param current_time_stamp Current time stamp (typically given by a measurement's time stamp).
+   */
   void predict(boost::posix_time::ptime current_time_stamp)
   {
     (void)updateTimestamp(current_time_stamp);
@@ -145,6 +182,12 @@ public:
     }
   }
 
+  /*!
+   * Updates particle weights according to measurements. Also deals with cases where no measurement is provided.
+   * 
+   * @param meas Provided measurement for weighting particles.
+   * @param dummy_meas If true, no measurement is provided and particles are handled accordingly.
+   */
   void update(const MeasurementObject::Object& meas, bool dummy_meas)
   {
     Eigen::Vector2d meas_vec;
@@ -230,6 +273,12 @@ public:
     updateMeanAndCov();
   }
 
+  /*!
+   * Outputs a single state estimate depeding on the output modality provided by the config.
+   * Possible modalities: highest weight particle, weighted mean over particles and median particle.
+   * 
+   * @return single state estimate
+   */
   const Eigen::Matrix<double, stateDim, 1>& estimatedState() const
   {
     switch (particle_filter_output_modality_)
@@ -272,6 +321,9 @@ public:
   }
 
 private:
+  /*!
+   * Low variance resampling according to Probabilistic Robotics.
+   */
   void resample()
   {
     std::vector<Particle> resampled_particles;
@@ -305,6 +357,9 @@ private:
     }
   }
 
+  /*!
+   * Updates sample mean and covariance based on the current particle set.
+   */
   void updateMeanAndCov()
   {
     double weight_square_sum = 0;
