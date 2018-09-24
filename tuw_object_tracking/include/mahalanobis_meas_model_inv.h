@@ -35,17 +35,17 @@
 
 #include <common.h>
 #include <eigen3/Eigen/Dense>
+#include "system_model.h"
 
-class MahalanobisMeasModelInv
+class MahalanobisMeasModelInv : public SystemModel
 {
 public:
-  MahalanobisMeasModelInv(double cov_scale);
+  MahalanobisMeasModelInv(double cov_scale = 1.0);
 
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov);
+  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov) override;
   
 private:
   double cov_scale_;
-  const unsigned int state_size_;
 };
 
 #endif  // MAHALANOBIS_MEAS_MODEL_INV_H

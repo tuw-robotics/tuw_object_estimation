@@ -34,15 +34,16 @@
 #define HEATMAP_SYSTEM_MODEL_INV_H
 
 #include "common.h"
+#include "meas_model.h"
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <random>
 
-class HeatMapSystemModelInv
+class HeatMapSystemModelInv : public MeasModel
 {
 public:
   HeatMapSystemModelInv(double sigma_theta, int angle_partitions, grid_map::GridMap& heat_map, grid_map::Matrix* layer);
 
-  double getProbability(const Eigen::Ref<const Eigen::VectorXd>& curr_state, const Eigen::Ref<const Eigen::VectorXd>& next_state, double dt);
+  double getProbability(const Eigen::Ref<const Eigen::VectorXd>& curr_state, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov = Eigen::MatrixXd(), double dt = 0) override;
 
 private:
   std::mt19937 generator_;                                /// random number generator

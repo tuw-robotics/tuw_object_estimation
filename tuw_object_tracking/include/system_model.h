@@ -42,8 +42,7 @@ public:
   SystemModel(unsigned int state_size) : state_size_(state_size) {}
   virtual ~SystemModel() {}
 
-  virtual void sample(Eigen::Ref<Eigen::VectorXd> state, double dt) = 0;
-  virtual void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m) = 0;
+  virtual void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas = Eigen::VectorXd(), const Eigen::Ref<const Eigen::MatrixXd>& meas_cov = Eigen::MatrixXd()) = 0;
   
   unsigned int getStateSize() const
   {

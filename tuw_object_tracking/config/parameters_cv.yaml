@@ -9,14 +9,14 @@ sigma_omega_sys: 0.5
 sigma_init_state: 0.05
 resample_rate: 1.0
 deletion_cycles: 40
-deletion_cycles_inv: 15
+deletion_cycles_inv: 25
 promotion_cycles: 2
 angle_partitions: 8
 max_dist_for_association: 3.22
 const_fwd_pred: false
 fwd_pred_time: 0.25
 output_mean: true
-visually_confirmed: true
+visually_confirmed: false
 use_mahalanobis: true
 gamma: 1.0
 motion_model: 0

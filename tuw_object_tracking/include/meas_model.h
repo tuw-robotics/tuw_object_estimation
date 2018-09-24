@@ -46,7 +46,7 @@ public:
   MeasModel(){}
   virtual ~MeasModel() {}
 
-  virtual double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov) = 0;
+  virtual double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov = MatrixXd(), double dt = 0) = 0;
 };
 
 #endif  // MEAS_MODEL_H

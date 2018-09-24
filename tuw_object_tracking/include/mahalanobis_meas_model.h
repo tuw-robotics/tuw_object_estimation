@@ -41,7 +41,7 @@ class MahalanobisMeasModel : public MeasModel
 public:
   MahalanobisMeasModel(double cov_scale);
 
-  double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov) override;
+  double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov, double dt = 0) override;
 private:
   double cov_scale_;
   static const int state_dim_ = 4;
