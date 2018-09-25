@@ -115,6 +115,7 @@ private:
   std::vector<ros::Subscriber> sub_vector_;
   ros::Publisher pub_detection_;
   ros::Publisher pub_detection_immature_;
+  ros::Publisher pub_detection_received_;
   ros::Publisher pub_particles_;
   ros::Publisher pub_sim_particles_;
   ros::Publisher pub_gridmap_;
