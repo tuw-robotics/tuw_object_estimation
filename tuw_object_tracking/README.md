@@ -2,7 +2,7 @@ tuw_object_tracking
 ===
 
 Particle filter based algorithm to track objects in 3D coordinates from a mobile robot. 
-Currently, this package is solely used to track people using detection algorithms from [tuw_people_detection]().
+Currently, this package is solely used to track people using detection algorithms from [tuw_people_detection](https://github.com/tuw-robotics/tuw_people_detection).
 Nevertheless, it can in principle be used to track any object given appropriate detections and motion models.
 
 

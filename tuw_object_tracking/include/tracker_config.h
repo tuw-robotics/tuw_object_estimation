@@ -44,6 +44,7 @@ struct TrackerConfig
   double max_dist_for_association;
   bool visually_confirmed;
   bool use_mahalanobis;
+  bool use_particle_mahalanobis;
 };
 
 #endif  // TRACKER_CONFIG_H

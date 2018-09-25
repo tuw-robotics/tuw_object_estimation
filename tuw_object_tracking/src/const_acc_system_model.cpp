@@ -43,7 +43,7 @@ ConstAccSystemModel::ConstAccSystemModel(double sigma_x, double sigma_y) : Syste
   sigma_y_ = sigma_y;
 }
 
-void ConstAccSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
+void ConstAccSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov)
 {
   assert(state.size() >= state_size_);
   Eigen::VectorXd sample = state;
@@ -56,9 +56,4 @@ void ConstAccSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt)
   sample(static_cast<int>(State::AY)) = state(static_cast<int>(State::AY)) + sigma_y_ * normal_distribution_(generator_);
   
   state = sample;
-}
-
-void ConstAccSystemModel::sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m)
-{
-  sample(state, dt);
 }

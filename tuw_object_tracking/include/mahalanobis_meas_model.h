@@ -39,9 +39,24 @@
 class MahalanobisMeasModel : public MeasModel
 {
 public:
+  /*!
+   * Constructor
+   * @param cov_scale Scale factor for the measurement covariance
+   */
   MahalanobisMeasModel(double cov_scale);
 
-  double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov) override;
+/*!
+ * Returns the probability of a measurement given the current particle state using the
+ * Mahalanobis distance, which is chi-square distributed.
+ * 
+ * @param curr_state Current state of the particle
+ * @param meas Received measurement
+ * @param meas_cov Corresponding covariance Matrix
+ * @param dt (optional) timestep, used to predict particles according to measurement model
+ * 
+ * @return probability of meas given curr_state
+ */
+  double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov, double dt = 0) override;
 private:
   double cov_scale_;
   static const int state_dim_ = 4;

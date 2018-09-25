@@ -39,7 +39,7 @@ SimpleMeasModel::SimpleMeasModel(double sigma)
   sigma_ = sigma;
 }
 
-double SimpleMeasModel::getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov)
+double SimpleMeasModel::getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov, double dt)
 {
   // simple measurement model, position directly observable (by detector)
   // state = [x, y, vx, vy]^T
@@ -47,7 +47,6 @@ double SimpleMeasModel::getProbability(const Ref<const VectorXd>& curr_state, co
   // C = [1, 0, 0, 0; 0, 1, 0, 0]
   
   // calculate eucl distance from predicted measurement to actual measurement
-  // calculate 
   double dist = sqrt((curr_state(0) - meas(0)) * (curr_state(0) - meas(0)) + (curr_state(1) - meas(1)) * (curr_state(1) - meas(1)));
   
   boost::math::normal norm = boost::math::normal(0, sigma_ * sigma_);

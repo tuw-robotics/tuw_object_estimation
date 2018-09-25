@@ -46,18 +46,76 @@ public:
   ObjectTracker(std::shared_ptr<ParticleFilterConfig> pf_config, std::shared_ptr<TrackerConfig> t_config);
   virtual ~ObjectTracker() {};
   
+  /*!
+   * Creates a new track based on an initial state.
+   * 
+   * @param init_state Initial state of the track.
+   * 
+   * @return Retruns the id of the newly created track.
+   */
   int createTrack(const Eigen::Matrix<double, STATE_SIZE, 1> init_state);
+  
+  /*!
+   * Deletes a track by id.
+   * 
+   * @param track_id ID of the track that shell be deleted
+   */
   void deleteTrack(const int track_id);
+  
+  /*!
+   * Getter method for tracks.
+   * 
+   * @return Returns a reference of the track std::map
+   */
   std::map<int, Track<STATE_SIZE>>& getTracks();
+  
+  /*!
+   * Adds received detections to the tracker
+   * 
+   * @param detection Pointer to the received detection.
+   */
   void addDetection(const MeasurementObjectConstPtr& detection);
+  
+  /*!
+   * Forward prediction for all tracks
+   * 
+   * @param current_time_stamp Current time, up to which the tracks should be predicted
+   */
   void predict(boost::posix_time::ptime current_time_stamp);
+  
+  /*!
+   * Deletes all detections in the tracker
+   */
   void clearDetections();
+  
+  /*!
+   * Sets the configuration struct of the particle filters
+   * 
+   * @param pf_config Particle filter configuration struct
+   */
   void setPFConfig(ParticleFilterConfig& pf_config);
+  
+  /*!
+   * Updates all particle filters (tracks) with the currently set config.
+   */
   void updatePFConfig();
+  
+  /*!
+   * Sets the configuration struct of the tracker
+   * 
+   * @param t_config Tracker configuration struct
+   */
   void setTrackerConfig(TrackerConfig& t_config);
+  
+  /*!
+   * Updates all active tracks with the currently set config.
+   */
   void updateTrackerConfig();
   
-  // this has to be implemented by the specific tracker
+  /*!
+   * Updates tracker according to received measurements. Handles track creation / deletion,
+   * data association and forward prediction. Needs to be implemented by a derived tracker.
+   */
   virtual void update() = 0;
   
   std::shared_ptr<ParticleFilterConfig> pf_config_;

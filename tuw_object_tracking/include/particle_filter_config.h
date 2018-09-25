@@ -48,6 +48,8 @@ struct ParticleFilterConfig
   bool enable_clustering;
   std::shared_ptr<MeasModel> meas_model;
   std::shared_ptr<SystemModel> system_model;
+  std::shared_ptr<SystemModel> meas_model_inv;
+  std::shared_ptr<MeasModel> system_model_inv;
 };
 
 #endif  // PARTICLE_FILTER_CONFIG_H

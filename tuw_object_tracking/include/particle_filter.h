@@ -33,27 +33,46 @@
 #ifndef PARTICLE_FILTER_H
 #define PARTICLE_FILTER_H
 
-#include <tuw_geometry/tuw_geometry.h>
 #include <particle_filter_config.h>
+#include <tuw_geometry/tuw_geometry.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "mean_shift.h"
-#include "common.h"
 #include <chrono>
+#include "common.h"
+#include "mean_shift.h"
 
 using namespace tuw;
 
+/*!
+ * @brief SIR Particle filter class for generic state dimension.
+ * 
+ * Generic SIR particle filter class using system models derived from SystemModel and 
+ * measurement models derived from MeasModel.
+ *
+ * @tparam stateDim State dimension used in the particle filter
+ */
 template <int stateDim>
 class ParticleFilter
 {
 public:
+  /*!
+   * Particle data struct containing state and weight.
+   */
   struct Particle
   {
     Eigen::Matrix<double, stateDim, 1> state;
     double weight;
   };
 
+  /*!
+   * Particle filter constructor
+   * 
+   * @param config Particle filter configuration struct, containing system model, meas model, ...
+   */
   ParticleFilter(std::shared_ptr<ParticleFilterConfig> config)
-    : system_model_(config->system_model), meas_model_(config->meas_model)
+    : system_model_(config->system_model)
+    , meas_model_(config->meas_model)
+    , system_model_inv_(config->system_model_inv)
+    , meas_model_inv_(config->meas_model_inv)
   {
     std::random_device rd;
     generator_ = std::mt19937(rd());
@@ -61,19 +80,23 @@ public:
 
     num_particles_ = config->num_particles;
     resample_rate_ = config->resample_rate;
-    particles_ = std::make_shared<std::vector<Particle> >(num_particles_);
-    cov_ = std::make_shared<Eigen::Matrix<double, stateDim, stateDim> >();
-    mean_ = std::make_shared<Eigen::Matrix<double, stateDim, 1> >();
+    particles_ = std::make_shared<std::vector<Particle>>(num_particles_);
+    cov_ = std::make_shared<Eigen::Matrix<double, stateDim, stateDim>>();
+    mean_ = std::make_shared<Eigen::Matrix<double, stateDim, 1>>();
     cluster_centroids_ = std::make_shared<std::vector<Eigen::Matrix<double, 2, 1>>>();
     const_fwd_pred_ = config->const_fwd_pred;
     fwd_pred_time_ = config->fwd_pred_time;
     particle_filter_output_modality_ = config->particle_filter_output_modality;
     enable_clustering_config_ = config->enable_clustering;
     enable_clustering_ = false;
-    
+
     weight_sum_ = 1.0;
   }
-  
+
+  /*!
+   * Configuration update function
+   * @param config New configuration struct
+   */
   void updateConfig(std::shared_ptr<ParticleFilterConfig> config)
   {
     system_model_ = config->system_model;
@@ -86,9 +109,15 @@ public:
     particle_filter_output_modality_ = config->particle_filter_output_modality;
   }
 
+  /*!
+   * Initialize a new track around an initial state.
+   * 
+   * @param init_state Initial state around which the track is initialized.
+   * @param sigma Standard deviation to distribute particles in a normal distribution around the initial state.
+   */
   // generate normal distributed particles around init_state
   void initAroundState(const Eigen::Matrix<double, stateDim, 1>& init_state, double sigma)
-  {    
+  {
     Eigen::Matrix<double, stateDim, 1> temp_state;
     for (int i = 0; i < num_particles_; i++)
     {
@@ -101,14 +130,34 @@ public:
     }
     updateMeanAndCov();
   }
+
+  /*!
+   * Forward simulate a specific set of particles. Can be used for visualization purposes.
+   * 
+   * @param dt Time interval for forward simulation.
+   * @param particles Vector of particles which shell be forward predicted.
+   */
+  void simulate(double dt, std::vector<Particle>& particles)
+  {
+    // forward prediction
+    for (size_t i = 0; i < particles.size(); i++)
+    {
+      system_model_->sample(particles[i].state, dt);
+    }
+  }
   
+  /*!
+   * Main forward prediction function. Uses the system model to predict new particle states.
+   * 
+   * @param current_time_stamp Current time stamp (typically given by a measurement's time stamp).
+   */
   void predict(boost::posix_time::ptime current_time_stamp)
   {
-    (void) updateTimestamp(current_time_stamp);
-    
+    (void)updateTimestamp(current_time_stamp);
+
     double dt;
-    
-    if(const_fwd_pred_)
+
+    if (const_fwd_pred_)
     {
       dt = boost::posix_time::millisec(fwd_pred_time_ * 1000).total_microseconds() / 1000000.;
     }
@@ -116,12 +165,16 @@ public:
     {
       dt = (duration_last_update_ + boost::posix_time::millisec(fwd_pred_time_ * 1000)).total_microseconds() / 1000000.;
     }
-    
-    if(dt <= 0.0)
+
+    if (dt <= 0.0)
       return;
-    
-    resample();
-    
+
+    // only resample if not all equal weight
+    if(std::any_of(particles_->begin(), particles_->end(), [&](Particle a) { return a.weight != particles_->begin()->weight; }))
+    {
+      resample();
+    }
+
     // forward prediction
     for (size_t i = 0; i < particles_->size(); i++)
     {
@@ -129,11 +182,17 @@ public:
     }
   }
 
+  /*!
+   * Updates particle weights according to measurements. Also deals with cases where no measurement is provided.
+   * 
+   * @param meas Provided measurement for weighting particles.
+   * @param dummy_meas If true, no measurement is provided and particles are handled accordingly.
+   */
   void update(const MeasurementObject::Object& meas, bool dummy_meas)
-  {    
+  {
     Eigen::Vector2d meas_vec;
-    
-    if(!dummy_meas)
+
+    if (!dummy_meas)
     {
       weight_sum_ = 0.0;
 
@@ -144,34 +203,32 @@ public:
     // go through all samples, get importance factor (weight) through meas model
     for (size_t i = 0; i < particles_->size(); i++)
     {
-      if(!dummy_meas)
+      if (!dummy_meas)
       {
         (*particles_)[i].weight = meas_model_->getProbability((*particles_)[i].state, meas_vec, meas.covariance);
         weight_sum_ += (*particles_)[i].weight;
       }
       else
       {
-        //weight_sum_ = 1.0;
+        // weight_sum_ = 1.0;
         //(*particles_)[i].weight = 1.0 / num_particles_;
       }
     }
 
-    if(!dummy_meas)
+    if (!dummy_meas)
     {
       // normalize
-      for(auto pit = particles_->begin(); pit != particles_->end(); pit++)
+      for (auto pit = particles_->begin(); pit != particles_->end(); pit++)
       {
-        if(weight_sum_ != 0.0)
+        if (weight_sum_ != 0.0)
         {
           pit->weight /= weight_sum_;
         }
       }
-      
+
       // sort particles_[0] has largest weight
-      std::sort(particles_->begin(), particles_->end(), [&](Particle a, Particle b)
-                {
-                  return (a.weight > b.weight);
-                });
+      //std::sort(particles_->begin(), particles_->end(), [&](Particle a, Particle b) { return (a.weight > b.weight); });
+      std::stable_sort(particles_->begin(), particles_->end(), [&](Particle a, Particle b) { return (a.weight > b.weight); });
     }
 
     // output particle array
@@ -182,28 +239,28 @@ public:
     }
     std::cout << std::endl << "-------------------------------------------------" << std::endl;
     */
-    
+
     // cluster if no meas, i.e. person possibly occluded
-    if(dummy_meas && enable_clustering_ && enable_clustering_config_)
+    if (dummy_meas && enable_clustering_ && enable_clustering_config_)
     {
       auto start = std::chrono::high_resolution_clock::now();
       cluster_centroids_ = std::make_shared<std::vector<Eigen::Matrix<double, 2, 1>>>();
       Eigen::Matrix<double, 2, Dynamic, Eigen::RowMajor> data;
       data.resize(2, num_particles_);
-      for(size_t i = 0; i < particles_->size(); i++)
+      for (size_t i = 0; i < particles_->size(); i++)
       {
         data.col(i) = (*particles_)[i].state.head(2);
       }
-      
+
       MeanShift<2> mean_shift(num_particles_, 4.0);
       mean_shift.meanShift(data, 5, 1.5);
       mean_shift.extractClusterCenters(data, *cluster_centroids_, 0.5);
-      
-      if(cluster_centroids_->size() > 1)
+
+      if (cluster_centroids_->size() > 1)
       {
         std::cout << "found " << cluster_centroids_->size() << " clusters" << std::endl;
-      
-        for(size_t k = 0; k < cluster_centroids_->size(); k++)
+
+        for (size_t k = 0; k < cluster_centroids_->size(); k++)
         {
           std::cout << "cluster[" << k << "] = " << (*cluster_centroids_)[k] << std::endl;
         }
@@ -212,41 +269,47 @@ public:
       std::chrono::duration<double> elapsed = finish - start;
       std::cout << "Elapsed time: " << elapsed.count() << " s" << std::endl;
     }
-    
+
     updateMeanAndCov();
   }
 
+  /*!
+   * Outputs a single state estimate depeding on the output modality provided by the config.
+   * Possible modalities: highest weight particle, weighted mean over particles and median particle.
+   * 
+   * @return single state estimate
+   */
   const Eigen::Matrix<double, stateDim, 1>& estimatedState() const
-  {    
+  {
     switch (particle_filter_output_modality_)
     {
-      case 0: // highest weight particle
+      case 0:  // highest weight particle
         return (*particles_)[0].state;
-      case 1: // weighted mean over all particles
+      case 1:  // weighted mean over all particles
         return *mean_;
-      case 2: // weighted median over all particles
+      case 2:  // weighted median over all particles
         return (*particles_)[particles_->size() / 2].state;
       default:
         std::cout << "wrong output modality, assuming mean" << std::endl;
         return *mean_;
     }
   }
-  
-  const std::shared_ptr<Eigen::Matrix<double, stateDim, stateDim> >& stateCovariance() const
+
+  const std::shared_ptr<Eigen::Matrix<double, stateDim, stateDim>>& stateCovariance() const
   {
     return cov_;
   }
-  
-  const std::shared_ptr<Eigen::Matrix<double, stateDim, 1> >& stateMean() const
+
+  const std::shared_ptr<Eigen::Matrix<double, stateDim, 1>>& stateMean() const
   {
     return mean_;
   }
 
-  const std::shared_ptr<std::vector<Particle> >& particles() const
+  const std::shared_ptr<std::vector<Particle>>& particles() const
   {
     return particles_;
   }
-  
+
   const boost::posix_time::ptime& lastUpdated() const
   {
     return timestamp_last_update_;
@@ -256,76 +319,82 @@ public:
   {
     enable_clustering_ = enable_clustering;
   }
-  
+
 private:
+  /*!
+   * Low variance resampling according to Probabilistic Robotics.
+   */
   void resample()
   {
     std::vector<Particle> resampled_particles;
     double M = resample_rate_ * particles_->size();
-    std::uniform_real_distribution<double> r_dist ( 0, 1.0 / M );
-    
+    std::uniform_real_distribution<double> r_dist(0, 1.0 / M);
+
     double r = r_dist(generator_);
     double c = (*particles_)[0].weight;
     double U;
     int i = 0;
-    
-    if(c > 0)
+
+    if (c > 0)
     {
-      for(int m = 0; m < M; m++)
+      for (int m = 0; m < M; m++)
       {
         U = r + m * 1.0 / M;
-        while(U > c)
+        while (U > c)
         {
           i = (i + 1) % (*particles_).size();
           c = c + (*particles_)[i].weight;
         }
         // add resampled particle
-        resampled_particles.push_back((*particles_)[i]); // maybe add additional noise?
+        resampled_particles.push_back((*particles_)[i]);  // maybe add additional noise?
       }
-      
+
       // replace particles
-      for(int i = 0; i < M; i++)
+      for (int i = 0; i < M; i++)
       {
         (*particles_)[particles_->size() - i - 1] = resampled_particles[i];
       }
     }
   }
-  
+
+  /*!
+   * Updates sample mean and covariance based on the current particle set.
+   */
   void updateMeanAndCov()
   {
     double weight_square_sum = 0;
-    
+
     // initialize mean / cov
-    for(Eigen::Index i = 0; i < mean_->size(); i++)
+    for (Eigen::Index i = 0; i < mean_->size(); i++)
     {
-      for(Eigen::Index j = 0; j < mean_->size(); j++)
+      for (Eigen::Index j = 0; j < mean_->size(); j++)
       {
         (*cov_)(i, j) = 0;
       }
       (*mean_)(i) = 0;
     }
-    
-    for(auto pit = particles_->begin(); pit != particles_->end(); pit++)
+
+    for (auto pit = particles_->begin(); pit != particles_->end(); pit++)
     {
-      //std::cout << "weight: " << pit->weight << std::endl;
-      //std::cout << "state: " << pit->state << std::endl;
+      // std::cout << "weight: " << pit->weight << std::endl;
+      // std::cout << "state: " << pit->state << std::endl;
       *mean_ += pit->state * pit->weight;
       weight_square_sum += pit->weight * pit->weight;
     }
-    
+
     // calculate covariance
-    for(auto pit = particles_->begin(); pit != particles_->end(); pit++)
-    {        
+    for (auto pit = particles_->begin(); pit != particles_->end(); pit++)
+    {
       *cov_ += pit->weight * (pit->state - *mean_) * (pit->state - *mean_).transpose();
     }
-    
-    if(weight_square_sum < 1.0)
+
+    if (weight_square_sum < 1.0)
     {
       *cov_ /= (1 - weight_square_sum);
     }
     else
     {
-      //std::cout << "weight square sum = " << weight_square_sum << std::endl;
+      // std::cout << "weight square sum = " << weight_square_sum << std::endl;
     }
   }
 
@@ -340,7 +409,7 @@ private:
     if (timestamp_last_update_.is_not_a_date_time())
     {
       timestamp_last_update_ = t;
-      //std::cout << "not a date time: " << std::endl;
+      // std::cout << "not a date time: " << std::endl;
     }
     if (timestamp_last_update_ < t)
     {
@@ -353,20 +422,22 @@ private:
       return false;
     }
   }
-  
+
   std::mt19937 generator_;                                /// random number generator
   std::normal_distribution<double> normal_distribution_;  /// normal distribution for generic use
 
   std::shared_ptr<SystemModel> system_model_;
   std::shared_ptr<MeasModel> meas_model_;
-  std::shared_ptr<SystemModel> system_model_inv_;
-  std::shared_ptr<MeasModel> meas_model_inv_;
-  
-  std::shared_ptr<std::vector<Particle> > particles_;
-  std::shared_ptr<Eigen::Matrix<double, stateDim, stateDim> > cov_;
-  std::shared_ptr<Eigen::Matrix<double, stateDim, 1> > mean_;
-  public: std::shared_ptr<std::vector<Eigen::Matrix<double, 2, 1>>> cluster_centroids_;
-  
+  std::shared_ptr<MeasModel> system_model_inv_;
+  std::shared_ptr<SystemModel> meas_model_inv_;
+
+  std::shared_ptr<std::vector<Particle>> particles_;
+  std::shared_ptr<Eigen::Matrix<double, stateDim, stateDim>> cov_;
+  std::shared_ptr<Eigen::Matrix<double, stateDim, 1>> mean_;
+
+public:
+  std::shared_ptr<std::vector<Eigen::Matrix<double, 2, 1>>> cluster_centroids_;
+
   double weight_sum_;
   int num_particles_;
   double resample_rate_;

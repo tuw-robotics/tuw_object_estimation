@@ -40,13 +40,26 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using Eigen::Vector4d;
 
+/*!
+ * This abstract class represents a generic measurement model.
+ */
 class MeasModel
 {
 public:
   MeasModel(){}
   virtual ~MeasModel() {}
 
-  virtual double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov) = 0;
+  /*!
+  * Returns the probability of a measurement given the current particle state.
+  * 
+  * @param curr_state Current state of the particle
+  * @param meas Received measurement
+  * @param meas_cov Corresponding covariance Matrix
+  * @param dt (optional) timestep, used to predict particles according to measurement model
+  * 
+  * @return probability of meas given curr_state
+  */
+  virtual double getProbability(const Ref<const VectorXd>& curr_state, const Ref<const VectorXd>& meas, const Ref<const MatrixXd>& meas_cov = MatrixXd(), double dt = 0) = 0;
 };
 
 #endif  // MEAS_MODEL_H

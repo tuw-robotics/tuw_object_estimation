@@ -56,18 +56,17 @@ HeatMapSystemModelInv::HeatMapSystemModelInv(double sigma_theta, int angle_parti
   }
 }
 
-
-double HeatMapSystemModelInv::getProbability(const Eigen::Ref<const Eigen::VectorXd>& curr_state, const Eigen::Ref<const Eigen::VectorXd>& next_state, double dt)
+double HeatMapSystemModelInv::getProbability(const Eigen::Ref<const Eigen::VectorXd>& curr_state, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov, double dt)
 {
   // current state vel vector angle theta and magnitude r
   double theta = atan2(curr_state(static_cast<int>(State::VY)), curr_state(static_cast<int>(State::VX)));
-  double theta_tar = atan2(next_state(static_cast<int>(State::VY)), curr_state(static_cast<int>(State::VX)));
+  double theta_tar = atan2(meas(static_cast<int>(State::VY)), curr_state(static_cast<int>(State::VX)));
   
   // calculate map index from current position
   grid_map::Index idx;
   grid_map::Index next_idx;
   grid_map::Position pos(curr_state(static_cast<int>(State::X)), curr_state(static_cast<int>(State::Y)));
-  grid_map::Position next_pos(next_state(static_cast<int>(State::X)), next_state(static_cast<int>(State::Y)));
+  grid_map::Position next_pos(meas(static_cast<int>(State::X)), meas(static_cast<int>(State::Y)));
   
   double theta_diff = theta_tar - theta;
   theta_diff = atan2(sin(theta_diff), cos(theta_diff));

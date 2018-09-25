@@ -33,10 +33,12 @@
 #include "tuw_object_tracking_node.h"
 #include <const_vel_system_model.h>
 #include <heatmap_system_model.h>
+#include <heatmap_system_model_inv.h>
 #include <const_acc_system_model.h>
 #include <coordinated_turn_system_model.h>
 #include <simple_meas_model.h>
 #include <mahalanobis_meas_model.h>
+#include <mahalanobis_meas_model_inv.h>
 #include <tuw_geometry/tuw_geometry.h>
 #include <iostream>
 #include <visualization_msgs/MarkerArray.h>
@@ -78,6 +80,7 @@ ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<Part
   pub_detection_immature_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("immature_tracks", 100);
   //pub_particles_ = nh_.advertise<geometry_msgs::PoseArray>("particles", 100);
   pub_particles_ = nh_.advertise<visualization_msgs::MarkerArray>("particles", 100);
+  pub_sim_particles_ = nh_.advertise<visualization_msgs::MarkerArray>("particles_sim", 100);
   pub_gridmap_ = nh_.advertise<grid_map_msgs::GridMap>("grid_map", 100);
   pub_cluster_centroids_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("cluster_centroids", 100);
 
@@ -145,6 +148,7 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
     case 2:  // heatmap
       object_tracker_->pf_config_->system_model =
           std::make_shared<HeatMapSystemModel>(config.sigma_x_sys, config.sigma_y_sys, config.sigma_omega_sys, config.angle_partitions, config.gamma, heat_map_, layer_);
+      object_tracker_->pf_config_->meas_model_inv = std::make_shared<MahalanobisMeasModelInv>(config.cov_scale_meas);
       std::cout << "switch to heatmap model" << std::endl;
       break;
     case 3:  // constant acceleration
@@ -165,6 +169,7 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
       break;
     case 1: // mahalanobis distance measurement model
       object_tracker_->pf_config_->meas_model = std::make_shared<MahalanobisMeasModel>(config.cov_scale_meas);
+      object_tracker_->pf_config_->system_model_inv = std::make_shared<HeatMapSystemModelInv>(config.sigma_omega_sys, config.angle_partitions, heat_map_, layer_);
       break;
   }
 
@@ -184,6 +189,7 @@ void ObjectTrackingNode::callbackParameters(tuw_object_tracking::tuw_object_trac
   object_tracker_->t_config_->max_dist_for_association = config.max_dist_for_association;
   object_tracker_->t_config_->visually_confirmed = config.visually_confirmed;
   object_tracker_->t_config_->use_mahalanobis = config.use_mahalanobis;
+  object_tracker_->t_config_->use_particle_mahalanobis = config.use_particle_mahalanobis;
   object_tracker_->t_config_->visual_confirmation_inc = config.visual_confirmation_inc;
 
   // update existing tracks
@@ -312,10 +318,7 @@ void ObjectTrackingNode::detectionCallback(const tuw_object_msgs::ObjectDetectio
 
   object_tracker_->addDetection(meas);
   
-  if (config_.print_tracks)
-    printTracks(config_.print_particles);
-  publishTracks(true);
-
+  //publishTracks(true);
 }
 
 void ObjectTrackingNode::printTracks(bool particles) const
@@ -452,8 +455,9 @@ void ObjectTrackingNode::publishTracks(bool particles) const
           marker.header.frame_id = common_frame_;
           marker.header.stamp = ros::Time();
           marker.ns = "tracking";
-          marker.id = j;
+          marker.id = it->first * particles->size() + j;
           marker.type = visualization_msgs::Marker::ARROW;
+          marker.lifetime = ros::Duration(0.1);
           marker.action = visualization_msgs::Marker::ADD;
           marker.pose.position.x = particles->operator[](j).state(static_cast<int>(State::X));
           marker.pose.position.y = particles->operator[](j).state(static_cast<int>(State::Y));
@@ -542,6 +546,7 @@ void ObjectTrackingNode::publishTracks(bool particles) const
   
   if (config_.print_tracks)
       printTracks(config_.print_particles);
+  forwardSimulation(2);
 }
 
 void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose)
@@ -570,7 +575,7 @@ void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovari
 
   ROS_INFO("create track with initial pose: (%f, %f) with id: %d", init_state(0), init_state(1), id);
 
-  publishTracks(true);
+  //publishTracks(true);
   //printTracks(true);
 
   // publish heat map
@@ -585,6 +590,70 @@ ObjectTracker& ObjectTrackingNode::objectTracker() const
   return *object_tracker_;
 }
 
+// quick and dirty forward simulation for visualization
+void ObjectTrackingNode::forwardSimulation(int steps) const
+{
+  visualization_msgs::MarkerArray marker_array;
+  
+  for (auto it = object_tracker_->getTracks().begin(); it != object_tracker_->getTracks().end(); it++)
+  {
+    if (it->second.getVisibility() && (!config_.visually_confirmed || it->second.getVisualConfirumation()))
+    {
+      auto particles = *(it->second.particles());
+      for(int i = 1; i <= steps; i++)
+      {
+        for (size_t j = 0; j < particles.size(); j++)
+        {
+          it->second.simulate(static_cast<double>(i * 0.1), particles);
+          visualization_msgs::Marker marker;
+          marker.header.frame_id = common_frame_;
+          marker.header.stamp = ros::Time();
+          marker.ns = "tracking_sim";
+          marker.id = it->first * particles.size() + j + i * 10000;
+          marker.type = visualization_msgs::Marker::ARROW;
+          marker.lifetime = ros::Duration(0.3);
+          marker.action = visualization_msgs::Marker::ADD;
+          marker.pose.position.x = particles[j].state(static_cast<int>(State::X));
+          marker.pose.position.y = particles[j].state(static_cast<int>(State::Y));
+          marker.pose.position.z = 0;
+
+          double state_vx = particles[j].state(static_cast<int>(State::VX));
+          double state_vy = particles[j].state(static_cast<int>(State::VY));
+
+          double yaw = atan2(state_vy, state_vx);
+          tf::Quaternion q;
+          q.setRPY(0, 0, yaw);
+          marker.pose.orientation.x = q.x();
+          marker.pose.orientation.y = q.y();
+          marker.pose.orientation.z = q.z();
+          marker.pose.orientation.w = q.w();
+          
+          marker.scale.x = sqrt(state_vx * state_vx + state_vy * state_vy) * 1.5;
+          marker.scale.y = 0.01;
+          marker.scale.z = 0.01;
+
+          if(i == 1)
+          {
+            marker.color.a = 1.0;
+            marker.color.r = 1.0;
+            marker.color.g = 0.0;
+            marker.color.b = 0.0;
+          }
+          else
+          {
+            marker.color.a = 1.0;
+            marker.color.r = 0.0;
+            marker.color.g = 0.6;
+            marker.color.b = 0.0;
+          }
+
+          marker_array.markers.emplace_back(marker);
+        }
+      }
+    }
+  }
+  pub_sim_particles_.publish(marker_array);
+}
 
 int main(int argc, char** argv)
 {    
@@ -611,6 +680,7 @@ int main(int argc, char** argv)
   t_config->max_dist_for_association = 2.0;
   t_config->visually_confirmed = false;
   t_config->use_mahalanobis = false;
+  t_config->use_particle_mahalanobis = false;
 
   ObjectTrackingNode object_tracking_node(nh, pf_config, t_config);
 
@@ -618,7 +688,8 @@ int main(int argc, char** argv)
   
   while (ros::ok())
   {
-    object_tracking_node.objectTracker().predict(ros::Time::now().toBoost());
+    boost::posix_time::ptime current_time_stamp = ros::Time::now().toBoost();
+    object_tracking_node.objectTracker().predict(current_time_stamp);
     
     object_tracking_node.objectTracker().update();
 

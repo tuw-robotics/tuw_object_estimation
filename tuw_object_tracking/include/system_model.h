@@ -36,14 +36,25 @@
 #include <eigen3/Eigen/Dense>
 #include <random>
 
+/*!
+ * This abstract class represents a generic system model.
+ */
 class SystemModel
 {
 public:
   SystemModel(unsigned int state_size) : state_size_(state_size) {}
   virtual ~SystemModel() {}
 
-  virtual void sample(Eigen::Ref<Eigen::VectorXd> state, double dt) = 0;
-  virtual void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m) = 0;
+  /*!
+   * Forward predicts a single particle from its current state to the next state.
+   * Needs to be implemented by deriving classes using a particular motion model.
+   * 
+   * @param state Current state of the tracked object / returns next state
+   * @param dt Forward prediction time
+   * @param meas (optional) Current measurement if used in forward prediction
+   * @param meas_cov (optional) Corresponding measurement covariance
+   */
+  virtual void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas = Eigen::VectorXd(), const Eigen::Ref<const Eigen::MatrixXd>& meas_cov = Eigen::MatrixXd()) = 0;
   
   unsigned int getStateSize() const
   {

@@ -38,10 +38,23 @@
 class CoordinatedTurnSystemModel : public SystemModel
 {
 public:
+  /*!
+   * Constructor
+   * @param sigma_x Sigma for acceleration noise in x-direction
+   * @param sigma_y Sigma for acceleration noise in y-direction
+   * @param sigma_omega Sigma for angular acceleration noise
+   */
   CoordinatedTurnSystemModel(double sigma_x, double sigma_y, double sigma_omega);
 
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt) override;
-  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, Eigen::Ref<Eigen::Vector2d> F, double m) override;
+  /*!
+   * Forward predicts a particle assuming nearly (noisy) constant velocity
+   * 
+   * @param state Current state of the tracked object / returns next state
+   * @param dt Forward prediction time
+   * @param meas (optional) Current measurement if used in forward prediction
+   * @param meas_cov (optional) Corresponding measurement covariance
+   */
+  void sample(Eigen::Ref<Eigen::VectorXd> state, double dt, const Eigen::Ref<const Eigen::VectorXd>& meas, const Eigen::Ref<const Eigen::MatrixXd>& meas_cov) override;
 
 private:
   std::mt19937 generator_;                                /// random number generator
