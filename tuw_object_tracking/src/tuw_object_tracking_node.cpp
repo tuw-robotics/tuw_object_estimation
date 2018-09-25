@@ -77,6 +77,7 @@ ObjectTrackingNode::ObjectTrackingNode(ros::NodeHandle& nh, std::shared_ptr<Part
   sub_initial_pose_ = nh_.subscribe("initialpose", 1, &ObjectTrackingNode::initialPoseCallback, this);
 
   pub_detection_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("tracked_objects", 100);
+  pub_detection_received_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("received_objects", 100);
   pub_detection_immature_ = nh_.advertise<tuw_object_msgs::ObjectDetection>("immature_tracks", 100);
   //pub_particles_ = nh_.advertise<geometry_msgs::PoseArray>("particles", 100);
   pub_particles_ = nh_.advertise<visualization_msgs::MarkerArray>("particles", 100);
@@ -214,7 +215,56 @@ void ObjectTrackingNode::detectionCallback(const tuw_object_msgs::ObjectDetectio
     ROS_ERROR("detectionCallback: %s", ex.what());
     return;
   }
+  
+  // republish incomming detections for consitency in visualization
+  // does not seem to be a problem for high frequency laser detections ...
+  if(detection.sensor_type == tuw_object_msgs::ObjectDetection::SENSOR_TYPE_GENERIC_RGBD || detection.sensor_type == tuw_object_msgs::ObjectDetection::SENSOR_TYPE_GENERIC_MONOCULAR_VISION)
+  {
+    // republish received, transformed detection
+    tuw_object_msgs::ObjectDetection detection_transf = detection;
+    
+    for(auto&& t_it = detection_transf.objects.begin(); t_it != detection_transf.objects.end(); t_it++)
+    {
+      tf::Transform p_as_tf;
+      tf::poseMsgToTF(t_it->object.pose, p_as_tf);
+      p_as_tf = detection2common * p_as_tf;
 
+      geometry_msgs::PoseWithCovariance p;
+      tf::poseTFToMsg(p_as_tf, p.pose);
+      
+      p.pose.position.z = 0;
+      t_it->object.pose = p.pose;
+      
+      tf::Matrix3x3 pose_cov;
+      
+      // we only need x,y,z
+      pose_cov[0][0] = t_it->covariance_pose[0];
+      pose_cov[0][1] = t_it->covariance_pose[1];
+      pose_cov[0][2] = t_it->covariance_pose[2];
+      pose_cov[1][0] = t_it->covariance_pose[3];
+      pose_cov[1][1] = t_it->covariance_pose[4];
+      pose_cov[1][2] = t_it->covariance_pose[5];
+      pose_cov[2][0] = t_it->covariance_pose[6];
+      pose_cov[2][1] = t_it->covariance_pose[7];
+      pose_cov[2][2] = t_it->covariance_pose[8];
+
+      tf::Matrix3x3 rotation = detection2common.getBasis();
+      pose_cov = rotation * pose_cov * rotation.transpose();
+      
+      t_it->covariance_pose[0] = pose_cov[0][0];
+      t_it->covariance_pose[1] = pose_cov[0][1];
+      t_it->covariance_pose[2] = pose_cov[0][2];
+      t_it->covariance_pose[3] = pose_cov[1][0];
+      t_it->covariance_pose[4] = pose_cov[1][1];
+      t_it->covariance_pose[5] = pose_cov[1][2];
+      t_it->covariance_pose[6] = pose_cov[2][0];
+      t_it->covariance_pose[7] = pose_cov[2][1];
+      t_it->covariance_pose[8] = pose_cov[2][2];
+    }
+    detection_transf.header.frame_id = common_frame_;
+    pub_detection_received_.publish(detection_transf);
+  }
+  
   // create tuw::MeasurementObject, convert ros msg to measurement data structure
   tuw::MeasurementObjectPtr meas = std::make_shared<MeasurementObject>();
 
@@ -474,10 +524,22 @@ void ObjectTrackingNode::publishTracks(bool particles) const
           marker.pose.orientation.z = q.z();
           marker.pose.orientation.w = q.w();
           
-          marker.scale.x = sqrt(state_vx * state_vx + state_vy * state_vy) * 1.5;
+          marker.scale.x = sqrt(state_vx * state_vx + state_vy * state_vy) * 2.5;
           marker.scale.y = 0.01;
           marker.scale.z = 0.01;
 
+          /*
+          marker.color.a = 1.0;
+          marker.color.r = 0.33;
+          marker.color.g = 1.0;
+          marker.color.b = 0.5;
+          */
+          /*
+          marker.color.a = 1.0;
+          marker.color.r = 1.0;
+          marker.color.g = 1.0;
+          marker.color.b = 1.0;
+          */
           marker.color.a = 1.0;
           marker.color.r = 0.0;
           marker.color.g = 0.0;
@@ -546,7 +608,7 @@ void ObjectTrackingNode::publishTracks(bool particles) const
   
   if (config_.print_tracks)
       printTracks(config_.print_particles);
-  forwardSimulation(2);
+  //forwardSimulation(2);
 }
 
 void ObjectTrackingNode::initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose)

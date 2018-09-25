@@ -18,9 +18,9 @@ fwd_pred_time: 0.25
 output_mean: true
 visually_confirmed: true
 use_mahalanobis: true
-visual_confirmation_inc: 3
+visual_confirmation_inc: 2
 gamma: 0.35
-motion_model: 2
+motion_model: 0
 measurement_model: 1
 particle_filter_output_modality: 1
 enable_clustering: false

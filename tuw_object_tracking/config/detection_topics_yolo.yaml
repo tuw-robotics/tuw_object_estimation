@@ -1,0 +1,1 @@
+detection_topics: [/darknet_ros/detected_persons_tuw, /p3dx/leg_detector/detected_persons_tuw, test]
