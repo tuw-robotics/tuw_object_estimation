@@ -5,8 +5,8 @@
   <arg name="common_frame"                          default="map"/>
   <arg name="initialpose"                           default="people_tracking/initialpose"/>
   <arg name="grid_map_frame"                        default="grid_map"/>
-  <arg name="grid_map_bagfile"                      default="people_tracking_roblab_example/roblab_heatmap.bag"/>
-  <arg name="detection_topics"                      default="detection_topics_zed.yaml"/>
+  <arg name="grid_map_bagfile"                      default="people-tracking-roblab/roblab_heatmap.bag"/>
+  <arg name="detection_topics"                      default="detection_topics_yolo.yaml"/>
   <arg name="parameter_config"                      default="parameters_heatmap.yaml"/>
   <arg name="tracked_objects_topic"                 default="tracked_people"/>
   <arg name="robot_name"                            default="r0"/>
@@ -17,7 +17,7 @@
   
   <!-- play bag file -->
   <group unless="$(arg tiny_yolo)">
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --pause $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_base.bag $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_YOLO.bag" />
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --pause $(find tuw_object_tracking)/bags/people-tracking-roblab/2018-09-25_roblab_detection_base.bag $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_YOLO.bag" />
   </group>
   <group if="$(arg tiny_yolo)">
     <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --pause $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_base.bag $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_YOLO-tiny.bag" />
