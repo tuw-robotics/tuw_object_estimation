@@ -20,7 +20,7 @@ visually_confirmed: true
 use_mahalanobis: true
 visual_confirmation_inc: 2
 gamma: 0.35
-motion_model: 0
+motion_model: 2
 measurement_model: 1
 particle_filter_output_modality: 1
 enable_clustering: false
