@@ -49,11 +49,29 @@ Ready to use detectors for people detection are implemented in [tuw_people_detec
 
 The ```config``` directory contains separate yaml configuration files for detectors used, as well as ROS parameters for the tracking algorithm.
 As an example ```detection_topics_rgbd_laser_rgb.yaml``` contains an array holding topic names of available detectors. 
-An example for tracking parameters is provided in ```parameters_heatmap.yaml``` using the heat map motion model.
+An example for tracking parameters is provided in ```parameters_heatmap.yaml``` using the heat map motion model and ```parameters_cv.yaml``` using a constant velocity forward prediction.
 
 ## Launch:
 
 Launch with:
 ```
 roslaunch tuw_object_tracking tuw_people_tracking.launch
+```
+
+# Demo:
+
+A bag file demo is available using pre-recorded leg detections / YOLOv3 or YOLOv3-tiny detections.
+First the bag files have to be downloaded and decompressed:
+```
+roscd tuw_object_tracking/bags/people-tracking-roblab
+wget -r -nH --cut-dirs=2 --no-parent -e robots=off  --reject="*index.html*" http://roblab.auto.tuwien.ac.at/ros-bagfiles/people-tracking-roblab/
+rosbag decompress 2018-09-25_roblab_detection*
+```
+Then the demo (including an rviz configuration) can be launched with:
+```
+roslaunch tuw_object_tracking people_tracking_bag_demo.launch
+```
+To use YOLOv3-tiny detections instead use:
+```
+roslaunch tuw_object_tracking people_tracking_bag_demo.launch tiny_yolo:=true
 ```
