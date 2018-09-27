@@ -1,4 +1,4 @@
-#include "tuw_geometry/measurement_object.h"
+#include "measurement_object.h"
 
 using namespace tuw;
 

@@ -35,6 +35,7 @@
 
 #include <tuw_object_msgs/ObjectDetection.h>
 #include <tuw_geometry/tuw_geometry.h>
+#include <measurement_object.h>
 #include <particle_filter_config.h>
 #include <tracker_config.h>
 #include <track.h>

@@ -40,6 +40,7 @@
 #include <mahalanobis_meas_model.h>
 #include <mahalanobis_meas_model_inv.h>
 #include <tuw_geometry/tuw_geometry.h>
+#include <measurement_object.h>
 #include <iostream>
 #include <visualization_msgs/MarkerArray.h>
 #include <rviz/ogre_helpers/arrow.h>

@@ -1,4 +1,4 @@
-#include <tuw_geometry/measurement.h>
+#include <measurement.h>
 
 using namespace tuw;
 
