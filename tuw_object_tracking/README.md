@@ -14,17 +14,6 @@ Besides constant velocity and coordinated turn forward prediction, the `tuw_obje
 ## Installation:
 
 ### ROS source package dependencies:
-  roscpp  
-  tuw_object_msgs  
-  tuw_geometry  
-  geometry_msgs  
-  tf  
-  dynamic_reconfigure  
-  grid_map_msgs  
-  grid_map_ros  
-  grid_map_cv  
-  grid_map_core  
-  pose_cov_ops  
 
 * [tuw_common](https://github.com/tuw-robotics/tuw_common) ```check the INSTALL.md inside the pkg because it holds submodules```
   * [tuw_msgs](https://github.com/tuw-robotics/tuw_msgs)
@@ -37,6 +26,10 @@ Besides constant velocity and coordinated turn forward prediction, the `tuw_obje
     * touch ./src/grid_map/grid_map_visualization/CATKIN_IGNORE
     * touch ./src/grid_map/grid_map_loader/CATKIN_IGNORE
 
+Package dependencies can the be installed by executing the following command in the workspace root:
+```
+rosdep install --from-paths src --ignore-src -r -y
+```
 No special compilation flags required. However, for performance reasons one should compile with ```-DCMAKE_BUILD_TYPE=Release```.
     
 ## Compatible Detection Algorithms:
