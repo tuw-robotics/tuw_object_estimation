@@ -49,19 +49,73 @@ namespace tuw
 class TrackingHeatmapNode
 {
 public:
+  /*!
+   * Constructor
+   * 
+   * @param n ROS node handle
+   */
   TrackingHeatmapNode(ros::NodeHandle& n);
+  
+  /*!
+   * Publish heat map as grid_map message
+   */
   void publish(void);
   ros::NodeHandle n_;        ///< Node handler to the root node
   ros::NodeHandle n_param_;  ///< Node handler to the current node
 
 private:
-  void trackingCallback(const tuw_object_msgs::ObjectDetection::ConstPtr& _tracked);
+  /*!
+   * Callback for received tracks as ObjectDetection messages.
+   * Constructs a histogram of people's location in the map from the tracks
+   * applying linear interpolation between time stamps. 
+   * 
+   * @param _tracked Received tracks of people
+   */
+  void trackingCallbck(const tuw_object_msgs::ObjectDetection::ConstPtr& _tracked);
+  
+  /*!
+   * Callback for the static map.
+   * Initiallizes a grid_map based on the received static map's size and resolution.
+   * This also calls be function to compute the initial likelihood field.
+   * Writes the generated grid_map into the bag file for backup.
+   * 
+   * @param _globalMap Received occupancy grid map.
+   */
   void globalMapCallback(const nav_msgs::OccupancyGrid::ConstPtr& _globalMap);
+  
+  /*!
+   * Periodically calls publish in order to publish the grid map.
+   * 
+   * @param event unused
+   */
   void timerCallback(const ros::TimerEvent& event);
+  
+  /*!
+   * Periodically saves the recorded data to the bag file.
+   * 
+   * @param event unused
+   */
   void savingTimerCallback(const ros::TimerEvent& event);
+  
+  /*!
+   * clears the internal grid map
+   */
   void clearMap(void);
+  
+  /*!
+   * Precomputes a vector field of directions representing the likelihood of directions.
+   * This is not used in people tracking, but in human motion prediction for navigation.
+   */
   void precomputeVectorField(void);
+  
+  /*!
+   * Computes the initial likelihood field based on distances to walls in the static map.
+   */
   void computeInitialLikelihoodField(void);
+  
+  /*!
+   * Computes static part of the social force model, i.e. that walls apply repelling forces.
+   */
   void computeSocialForces(void);
 
   ros::Subscriber subTrackings_;
