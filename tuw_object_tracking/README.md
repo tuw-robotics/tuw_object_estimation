@@ -1,8 +1,9 @@
 tuw_object_tracking
 ===
 
-Particle filter based algorithm to track objects in 3D coordinates from a mobile robot. 
-Currently, this package is solely used to track people using detection algorithms from [tuw_people_detection](https://github.com/tuw-robotics/tuw_people_detection).
+Particle filter based algorithm to track objects in 3D coordinates from a mobile robot.
+Currently, this package is solely used to track people using detection algorithms from [tuw_people_detection](https://github.com/tuw-robotics/tuw_people_detection). A detailed description of the underlying algorithms can be
+found in the authors master thesis [1].
 Nevertheless, it can in principle be used to track any object given appropriate detections and motion models.
 
 ## Heat Map Motion Prediction
@@ -66,3 +67,6 @@ To use YOLOv3-tiny detections instead use:
 ```
 roslaunch tuw_object_tracking people_tracking_bag_demo.launch tiny_yolo:=true
 ```
+
+## References:
+[1] [Beck, F. (2018). People tracking using particle filters and an advanced human motion model on mobile robots (Master Thesis)](http://repositum.tuwien.ac.at/urn:nbn:at:at-ubtuw:1-109108)
