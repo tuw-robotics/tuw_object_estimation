@@ -20,7 +20,7 @@ endif(CMAKE_BUILD_TYPE MATCHES Debug)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
   roscpp
   tuw_object_msgs
   tuw_geometry
@@ -148,10 +148,14 @@ add_library(${PROJECT_NAME}
   src/const_vel_system_model.cpp
   src/simple_meas_model.cpp
   src/mahalanobis_meas_model.cpp
+  src/mahalanobis_meas_model_inv.cpp
   src/heatmap_system_model.cpp
+  src/heatmap_system_model_inv.cpp
   src/coordinated_turn_system_model.cpp
   src/const_acc_system_model.cpp
   src/munkres.cpp
+  src/measurement.cpp
+  src/measurement_object.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}

@@ -20,7 +20,7 @@
     <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --pause $(find tuw_object_tracking)/bags/people-tracking-roblab/2018-09-25_roblab_detection_base.bag $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_YOLO.bag" />
   </group>
   <group if="$(arg tiny_yolo)">
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --pause $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_base.bag $(find tuw_object_tracking)/bags/people_tracking_roblab_example/2018-09-25_roblab_detection_YOLO-tiny.bag" />
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --pause $(find tuw_object_tracking)/bags/people-tracking-roblab/2018-09-25_roblab_detection_base.bag $(find tuw_object_tracking)/bags/people-tracking-roblab/2018-09-25_roblab_detection_YOLO-tiny.bag" />
   </group>
 
   <!-- launch object tracking node -->
