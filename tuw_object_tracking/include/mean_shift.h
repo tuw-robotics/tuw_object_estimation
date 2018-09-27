@@ -40,11 +40,22 @@ using Eigen::Dynamic;
 using Eigen::RowMajor;
 using Eigen::Ref;
 
+/*!
+ * Template class representing a mean shift algorithm
+ * 
+ * @tparam dim The dimension each data point that ought to be clustered.
+ */
 template <int dim>
 class MeanShift
 {
 
 public:
+  /*!
+   * Constructor
+   * 
+   * @param num_datapoints The number of data points to be clustered.
+   * @param kernel_bandwidth Kernel bandwidth used to weight nearby datapoints.
+   */
   MeanShift(int num_datapoints, double kernel_bandwidth)
   {
     num_datapoints_ = num_datapoints;

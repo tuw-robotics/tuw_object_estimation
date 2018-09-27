@@ -35,6 +35,9 @@
 
 #include <meas_model.h>
 
+/*!
+ * Simple measurement model based on euclidean distance.
+ */
 class SimpleMeasModel : public MeasModel
 {
 public:

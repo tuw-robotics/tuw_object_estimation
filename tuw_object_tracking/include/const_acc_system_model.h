@@ -35,6 +35,9 @@
 
 #include <system_model.h>
 
+/*!
+ * This class represents the (nearly) constant acceleration motion model.
+ */
 class ConstAccSystemModel : public SystemModel
 {
 public:

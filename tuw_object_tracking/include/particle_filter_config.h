@@ -37,6 +37,9 @@
 #include <meas_model.h>
 #include <system_model.h>
 
+/*!
+ * Configuration struct for the particle filter.
+ */
 struct ParticleFilterConfig
 {
   int num_particles;

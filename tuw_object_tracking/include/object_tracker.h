@@ -41,6 +41,10 @@
 #include <track.h>
 #include <common.h>
 
+/*!
+ * Generic object tracker class. Contains the abstract method update which
+ * has to be implemented by specific derived tracking classes.
+ */
 class ObjectTracker
 {
 public:

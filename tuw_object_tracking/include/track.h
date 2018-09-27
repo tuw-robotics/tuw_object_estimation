@@ -37,10 +37,24 @@
 #include <particle_filter.h>
 #include <tuw_geometry/tuw_geometry.h>
 
+/*!
+ * @brief Template class representing an object's track over time.
+ *        Directly derived from the particle filter.
+ * 
+ * @tparam stateDim Dimension of the tracked object's state.
+ */
 template <int stateDim>
 class Track : public ParticleFilter<stateDim>
 {
 public:
+  /*!
+   * Constructor
+   * 
+   * @param init_state Initial state of the track.
+   * @param config The underlying particle filter config.
+   * @param id The unique track ID.
+   * @param visual_confirmation_inc Value of which the visual confirmation counter is increased if a visual detection occurs.
+   */
   Track(const Eigen::Matrix<double, stateDim, 1>& init_state, std::shared_ptr<ParticleFilterConfig> config, const int id, const int visual_confirmation_inc)
     : ParticleFilter<stateDim>(config), track_id_(id), visual_confirmation_inc_(visual_confirmation_inc)
   {
@@ -51,52 +65,114 @@ public:
     visually_confirmed_ = false;
     visual_confirmation_ = 1;
   }
+  
+  /*!
+   * Getter for the track id
+   * 
+   * @return track id
+   */
   const int getTrackId() const
   {
     return track_id_;
   }
+  
+  /*!
+   * reset the delete counter
+   */
   void resetDelete()
   {
     delete_ = 0;
   }
+  
+  /*!
+   * increment the delete counter by 1
+   */
   void incDelete()
   {
     delete_++;
   }
+  
+  /*!
+   * Getter for the delete counter
+   * 
+   * @return delete counter
+   */
   int getDelete() const
   {
     return delete_;  
   }
+  
+  /*!
+   * set track visibility
+   * 
+   * @param visible Boolean value whether the track should be visible or not.
+   */
   void setVisibility(bool visible)
   {
     visible_ = visible;
   }
+  
+  /*!
+   * Getter for visibility
+   */
   bool getVisibility() const
   {
     return visible_;
   }
+  
+  /*!
+   * Increment maturity promotion counter by 1.
+   */
   void incPromote()
   {
     promote_++;  
   }
+  
+  /*!
+   * Getter for maturity promotion counter.
+   * 
+   * @return promotion counter value
+   */
   int getPromote() const
   {
     return promote_;
   }
+  
+  /*!
+   * Set visual confirmation
+   * 
+   * @param Boolean value whether the track is visually confirmed or not.
+   */
   void setVisualConfirmation(bool visually_confirmed)
   {
     visually_confirmed_ = visually_confirmed;
   }
+  
+  /*!
+   * Getter for visual confirmation
+   * 
+   * @return Boolean value whether the track is visually confirmed or not.
+   */
   bool getVisualConfirumation() const
   {
     return visual_confirmation_ > 0;
     //return visually_confirmed_;
   }
+  
+  /*!
+   * Increment visual confirmation counter by the value set in the constructor.
+   * This also enables particle clustering for visible tracks. However clustering
+   * will not be performed unless it is set in the particle filter config too.
+   */
   void incVisualConfirmation()
   {
     visual_confirmation_ += visual_confirmation_inc_;
     this->setEnableClustering(visual_confirmation_ > 0 && visible_);
   }
+  
+  /*!
+   * Decrement visual confirmation by 1.
+   */
   void decVisualConfirmation()
   {
     visual_confirmation_--;

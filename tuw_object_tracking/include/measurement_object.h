@@ -22,6 +22,10 @@ const static std::string SENSOR_TYPE_GENERIC_MONOCULAR_VISION = "mono";
 const static std::string SENSOR_TYPE_GENERIC_STEREO_VISION = "stereo";
 const static std::string SENSOR_TYPE_GENERIC_RGBD = "rgbd";
 
+/*!
+ * This class represents object measurements in a generic fashion.
+ * It can be used to abstract ROS tuw_object_msgs.
+ */
 class MeasurementObject : public Measurement
 {
 public:

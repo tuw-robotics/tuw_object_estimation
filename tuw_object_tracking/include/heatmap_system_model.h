@@ -36,6 +36,9 @@
 #include <system_model.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 
+/*!
+ * This class represents the heat map motion model which is derived from the generic system model.
+ */
 class HeatMapSystemModel : public SystemModel
 {
 public:

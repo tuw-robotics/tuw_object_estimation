@@ -35,6 +35,9 @@
 
 #include <system_model.h>
 
+/*!
+ * This class represents the (nearly) constant velocity motion model
+ */
 class ConstVelSystemModel : public SystemModel
 {
 public:

@@ -35,6 +35,9 @@
 
 #define STATE_SIZE 9
 
+/*!
+ * Enum with commonly used state index names.
+ */
 enum class State
 {
   X = 0,

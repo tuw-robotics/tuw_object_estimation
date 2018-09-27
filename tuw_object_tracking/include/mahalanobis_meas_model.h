@@ -36,6 +36,9 @@
 #include <meas_model.h>
 #include <common.h>
 
+/*!
+ * This class represents a measurement model based on the mahalanobis distance.
+ */
 class MahalanobisMeasModel : public MeasModel
 {
 public:

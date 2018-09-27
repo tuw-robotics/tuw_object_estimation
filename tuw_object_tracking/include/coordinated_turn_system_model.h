@@ -35,6 +35,9 @@
 
 #include <system_model.h>
 
+/*!
+ * This class represents the (nearly) coordinated turn system model.
+ */
 class CoordinatedTurnSystemModel : public SystemModel
 {
 public:
