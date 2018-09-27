@@ -1,7 +1,9 @@
 tuw_tracking_heatmap
 ===
 
-This package creates heat maps of likely locations of people in a static map. It is able to compute an initial likelihood field based on a static map and furthermore, observed tracks can be integrated for the use of historic data.
+This package creates heat maps of likely locations of people in a static map. It is able to compute an initial likelihood field based on a static map and furthermore, observed tracks can be integrated for the use of historic data. In the left image below one can see a recording of historical data displayed as a heat map and on the right the historical data integrated into an initial likelihood field is shown.
+
+<img src="https://github.com/tuw-robotics/tuw_object_estimation/blob/master/tuw_tracking_heatmap/res/all_dirs_heatmap_image.jpg" width="250"/>              <img src="https://github.com/tuw-robotics/tuw_object_estimation/blob/master/tuw_tracking_heatmap/res/all_dirs_and_initial_heatmap_image.jpg" width="250"/>
 
 # Packages needed in workspace
 * grid_map https://github.com/tuw-robotics/grid_map

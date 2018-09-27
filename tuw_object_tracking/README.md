@@ -5,6 +5,11 @@ Particle filter based algorithm to track objects in 3D coordinates from a mobile
 Currently, this package is solely used to track people using detection algorithms from [tuw_people_detection](https://github.com/tuw-robotics/tuw_people_detection).
 Nevertheless, it can in principle be used to track any object given appropriate detections and motion models.
 
+# Heat Map Motion Prediction
+
+Besides constant velocity and coordinated turn forward prediction, the `tuw_object_tracking` package implements a heat map motion model based on heat maps created by the `tuw_tracking_heatmap` package. Based on such heat maps, the underlying static map as well as historical data can be considered. The image below shows an example visualization of a forward prediction. The blue arrows show particles in the current state, the red ones are predicted 0.1 s into the future and the green ones 0.2s into the future. One can observe that predictions cover different possible direction, whereas straight forward remains the most likely. 
+
+<img src="https://github.com/tuw-robotics/tuw_object_estimation/blob/master/tuw_object_tracking/res/particle_prediction.png" width="500"/>
 
 # Installation:
 
