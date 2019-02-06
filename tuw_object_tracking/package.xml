@@ -50,7 +50,6 @@
   <build_depend>grid_map_cv</build_depend>
   <build_depend>grid_map_ros</build_depend>
   <build_depend>grid_map_core</build_depend>
-  <build_depend>pose_cov_ops</build_depend>
 
   <run_depend>tuw_object_msgs</run_depend>
   <run_depend>tuw_geometry</run_depend>
@@ -61,7 +60,6 @@
   <run_depend>grid_map_cv</run_depend>
   <run_depend>grid_map_msgs</run_depend>
   <run_depend>grid_map_core</run_depend>
-  <run_depend>pose_cov_ops</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

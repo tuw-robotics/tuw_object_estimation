@@ -31,7 +31,6 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_ros
   grid_map_cv
   grid_map_core
-  pose_cov_ops
 )
 
 ## System dependencies are found with CMake's conventions

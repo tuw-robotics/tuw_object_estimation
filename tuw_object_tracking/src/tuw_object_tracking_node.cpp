@@ -47,7 +47,6 @@
 #include <tf/tf.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseWithCovariance.h>
-#include <pose_cov_ops/pose_cov_ops.h>
 #include "object_tracker_separate.h"
 
 #include <rosbag/bag.h>
