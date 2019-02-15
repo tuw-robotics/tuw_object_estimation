@@ -63,7 +63,12 @@ public:
    * Dynamic reconfigure callback.
    */
   void callbackParameters(tuw_object_tracking::tuw_object_trackingConfig &config, uint32_t level);
-  
+
+  /*!
+   * Trigger object following for all objects at a specific distance
+   */
+  void objectFollowingCallbackTriggered(const float &);
+
   /*!
    * Object detection callback. Receives detections from other ROS nodes and passes them to the object tracker.
    * 
@@ -120,6 +125,7 @@ private:
   ros::Publisher pub_sim_particles_;
   ros::Publisher pub_gridmap_;
   ros::Publisher pub_cluster_centroids_;
+  ros::Publisher pub_detection_as_goal_;
   
   dynamic_reconfigure::Server<tuw_object_tracking::tuw_object_trackingConfig> reconfigureServer_;
   dynamic_reconfigure::Server<tuw_object_tracking::tuw_object_trackingConfig>::CallbackType reconfigureFnc_;
@@ -137,6 +143,9 @@ private:
   grid_map::Matrix* layer_;
   float grid_map_max_;
   float grid_map_min_;
+
+  bool following_triggered_;
+  float trigger_radius_;
 };
 
 #endif  // TUW_OBJECT_TRACKING_NODE_H

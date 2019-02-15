@@ -1,20 +1,22 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tuw_feed_mpn)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -O2 -g ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++14 -O2 -g ${CMAKE_CXX_FLAGS}")
 
 SET(CMAKE_BUILD_TYPE Release)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  tuw_object_msgs
-  tuw_geometry
-  tf
-)
+        roscpp
+        rospy
+        std_msgs
+        tuw_object_msgs
+        tuw_geometry
+        tf2
+        tf2_ros
+        tf2_geometry_msgs
+        )
 
 # eigen3
 find_package(Eigen3 REQUIRED)
@@ -110,10 +112,10 @@ find_package(OpenCV REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-#  LIBRARIES tracking_heatmap
-  CATKIN_DEPENDS roscpp rospy std_msgs tuw_object_msgs tuw_geometry
-#  DEPENDS system_lib
+        INCLUDE_DIRS include
+        #  LIBRARIES tracking_heatmap
+        CATKIN_DEPENDS roscpp rospy std_msgs tuw_object_msgs tuw_geometry tf2 tf2_ros tf2_geometry_msgs
+        #  DEPENDS system_lib
 )
 
 ###########
@@ -123,10 +125,10 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-    include  
-    ${catkin_INCLUDE_DIRS} 
-    ${Eigen3_INCLUDE_DIRS}
-    ${OpenCV_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${Eigen3_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -148,9 +150,9 @@ add_executable(tuw_feed_mpn_node src/tuw_feed_mpn_node.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(tuw_feed_mpn_node
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+        )
 
 #############
 ## Install ##

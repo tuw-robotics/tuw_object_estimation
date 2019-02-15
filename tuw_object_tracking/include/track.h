@@ -49,7 +49,7 @@ class Track : public ParticleFilter<stateDim>
 public:
   /*!
    * Constructor
-   * 
+   *
    * @param init_state Initial state of the track.
    * @param config The underlying particle filter config.
    * @param id The unique track ID.
@@ -65,17 +65,17 @@ public:
     visually_confirmed_ = false;
     visual_confirmation_ = 1;
   }
-  
+
   /*!
    * Getter for the track id
-   * 
+   *
    * @return track id
    */
   const int getTrackId() const
   {
     return track_id_;
   }
-  
+
   /*!
    * reset the delete counter
    */
@@ -83,7 +83,7 @@ public:
   {
     delete_ = 0;
   }
-  
+
   /*!
    * increment the delete counter by 1
    */
@@ -91,27 +91,27 @@ public:
   {
     delete_++;
   }
-  
+
   /*!
    * Getter for the delete counter
-   * 
+   *
    * @return delete counter
    */
   int getDelete() const
   {
-    return delete_;  
+    return delete_;
   }
-  
+
   /*!
    * set track visibility
-   * 
+   *
    * @param visible Boolean value whether the track should be visible or not.
    */
   void setVisibility(bool visible)
   {
     visible_ = visible;
   }
-  
+
   /*!
    * Getter for visibility
    */
@@ -119,38 +119,38 @@ public:
   {
     return visible_;
   }
-  
+
   /*!
    * Increment maturity promotion counter by 1.
    */
   void incPromote()
   {
-    promote_++;  
+    promote_++;
   }
-  
+
   /*!
    * Getter for maturity promotion counter.
-   * 
+   *
    * @return promotion counter value
    */
   int getPromote() const
   {
     return promote_;
   }
-  
+
   /*!
    * Set visual confirmation
-   * 
+   *
    * @param Boolean value whether the track is visually confirmed or not.
    */
   void setVisualConfirmation(bool visually_confirmed)
   {
     visually_confirmed_ = visually_confirmed;
   }
-  
+
   /*!
    * Getter for visual confirmation
-   * 
+   *
    * @return Boolean value whether the track is visually confirmed or not.
    */
   bool getVisualConfirumation() const
@@ -158,7 +158,7 @@ public:
     return visual_confirmation_ > 0;
     //return visually_confirmed_;
   }
-  
+
   /*!
    * Increment visual confirmation counter by the value set in the constructor.
    * This also enables particle clustering for visible tracks. However clustering
@@ -169,7 +169,7 @@ public:
     visual_confirmation_ += visual_confirmation_inc_;
     this->setEnableClustering(visual_confirmation_ > 0 && visible_);
   }
-  
+
   /*!
    * Decrement visual confirmation by 1.
    */
@@ -177,7 +177,15 @@ public:
   {
     visual_confirmation_--;
   }
-  
+
+  /*!
+   * Get visual confirmation counter.
+   */
+  int getVisualConfirmationCount()
+  {
+    return visual_confirmation_;
+  }
+
 private:
   int track_id_;
   int delete_;
