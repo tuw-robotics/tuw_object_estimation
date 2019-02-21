@@ -13,9 +13,12 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         tuw_object_msgs
         tuw_geometry
+        tf
         tf2
         tf2_ros
         tf2_geometry_msgs
+        dynamic_reconfigure
+        visualization_msgs
         )
 
 # eigen3
@@ -102,6 +105,10 @@ find_package(OpenCV REQUIRED)
 #   cfg/DynReconf2.cfg
 # )
 
+generate_dynamic_reconfigure_options(
+        cfg/FeedMpnNode.cfg
+)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -114,13 +121,24 @@ find_package(OpenCV REQUIRED)
 catkin_package(
         INCLUDE_DIRS include
         #  LIBRARIES tracking_heatmap
-        CATKIN_DEPENDS roscpp rospy std_msgs tuw_object_msgs tuw_geometry tf2 tf2_ros tf2_geometry_msgs
+        CATKIN_DEPENDS roscpp
+        rospy
+        std_msgs
+        tuw_object_msgs
+        tuw_geometry
+        tf
+        tf2
+        tf2_ros
+        tf2_geometry_msgs
+        dynamic_reconfigure
+        visualization_msgs
         #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -142,7 +160,10 @@ include_directories(
 # add_dependencies(tracking_heatmap ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(tuw_feed_mpn_node src/tuw_feed_mpn_node.cpp)
+add_executable(${PROJECT_NAME}_node src/tuw_feed_mpn_node.cpp)
+
+add_dependencies(${PROJECT_NAME}_node
+        ${PROJECT_NAME}_gencfg)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
